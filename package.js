@@ -12,10 +12,16 @@ Package.onUse(function(api) {
 
 function configurePackage(api) {
   api.versionsFrom('METEOR@0.9.2');
-  api.use(['mongo-livedata', 'tracker', 'ddp'], ['server']);
+  api.use(['mongo-livedata', 'tracker', 'ddp'], ['server', 'client']);
 
+  api.addFiles('lib/namespace.js', ['server', 'client']);
   api.addFiles([
     'lib/proxy_connection.js',
-    'lib/manager.js'
+    'lib/cursor.js',
+    'lib/server.js'
   ], ['server']);
+
+  api.addFiles([
+    'lib/client.js'
+  ], ['client']);
 }
