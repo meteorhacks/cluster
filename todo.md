@@ -6,18 +6,17 @@
 
 # LoadBalancing
 
-* When we get the HTML page to main server, pick a server and get the data.
-* Then we also need to set a null publication and make sure we give priority to the current server's(autoupdate) URL
-
-* But if not available, we could give something else
-* We also need to send some backup URLs to the client (in case, first one disconnected)
-* We need to store the currently serving server's DDP_URL on the cookie
-* We need to create a some of http proxy to proxy static resources, including the HTML
-  * That should be based on the DDP_URL value on the cookie
-  * Then we can load balance accordingly
-* We need to run our own connection timeout logic retry with the new DDP URL
-  * then set the cookie and reload
-
+* Get the service url from the PUBLIC_URL
+* Inject the PUBLIC_URL if available by inject-data
+* When we get the HTML page to the main server, get the current server asigned by the discovery
+* If it's not the current app, proxy the default HTML page from that site
+  * set special header to avoid looping
+  * set a cookie to proxy static requests from this server
+* Proxy static content
+* When the app is loading, connect to the public-url got from the InjectData
+* subscribe to new a discovery URL (after connected)
+  * always give best match to find for currentURL & autoupdateVersion
+* Observe the discovery URL and connect to it, if we are already disconnected
 
 # Misc
 
