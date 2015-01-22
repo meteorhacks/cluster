@@ -40,7 +40,6 @@ function configurePackage(api) {
   api.addFiles([
     'lib/server/backends/mongo.js',
     'lib/server/backends/mongo_cursor.js',
-    'lib/server/cursor.js',
     'lib/server/api.js',
     'lib/server/load_balancing.js'
   ], ['server']);
