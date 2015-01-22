@@ -14,7 +14,8 @@ Package.onTest(function(api) {
   api.use('tinytest');
 
   api.addFiles([
-    'test/server/backends/mongo.js'
+    'tests/server/backends/mongo.js',
+    'tests/server/backends/mongo_cursor.js'
   ], 'server');
 });
 
