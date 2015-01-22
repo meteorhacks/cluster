@@ -1,7 +1,8 @@
-* Autoupdate version needs to be a primary key (when upserting)
-* Allow to publish services to the client
-* Implement a client side version of proxy based on that (propagate the current URL, by default)
-* then all we need to pass that cursor to the proxy
+- * Autoupdate version needs to be a primary key (when upserting)
+- * Allow to publish services to the client
+- * Create a client side cursor
+- * Implement a client side version of proxy based on that (propagate the current URL, by default)
+- * then all we need to pass that cursor to the proxy
 
 # LoadBalancing
 
