@@ -133,8 +133,80 @@ function(test) {
   test.equal(result[1].autoupdateVersion, "av");
 });
 
-Tinytest.addAsync("Backends - MongoCursor - observeChanges",
-function(test) {
+Tinytest.addAsync("Backends - MongoCursor - observeChanges - fetch & listen",
+function(test, done) {
   MongoBackend._services.remove({});
-  MongoBackend.sendHeartbeat("av", "url", "service", {aa: 20, bb: 40});
+  MongoBackend.sendHeartbeat("av", "url", "service", 500);
+  MongoBackend.sendHeartbeat("av", "url2", "service", 500);
+
+  var query = {};
+  var cursor = new MongoBackend.Cursor("service", query, {limit: 2});
+  var urls = [];
+  var h = cursor.observeChanges({
+    added: function(url, service) {
+      test.equal(typeof service, "object");
+      urls.push(url);
+    }
+  });
+
+  h.stop();
+  test.equal(urls, ['url2', 'url']);
+  done();
+});
+
+Tinytest.addAsync("Backends - MongoCursor - observeChanges - new updates",
+function(test, done) {
+  MongoBackend._services.remove({});
+  MongoBackend.sendHeartbeat("av", "url", "service", 500);
+  MongoBackend.sendHeartbeat("av", "url2", "service", 500);
+
+  var query = {};
+  var options = {limit: 2, interval: 50};
+  var cursor = new MongoBackend.Cursor("service", query, options);
+  var added = [];
+  var removed = [];
+  var h = cursor.observeChanges({
+    added: function(url, service) {
+      added.push(url);
+    },
+    removed: function(url) {
+      removed.push(url);
+    }
+  });
+  MongoBackend.sendHeartbeat("av", "url3", "service", 500);
+  Meteor._sleepForMs(100);
+
+  h.stop();
+  test.equal(added, ['url2', 'url', 'url3']);
+  test.equal(removed, ['url']);
+  done();
+});
+
+Tinytest.addAsync("Backends - MongoCursor - observeChanges - stopping",
+function(test, done) {
+  MongoBackend._services.remove({});
+  MongoBackend.sendHeartbeat("av", "url", "service", 500);
+  MongoBackend.sendHeartbeat("av", "url2", "service", 500);
+
+  var query = {};
+  var options = {limit: 2, interval: 50};
+  var cursor = new MongoBackend.Cursor("service", query, options);
+  var added = [];
+  var removed = [];
+  var h = cursor.observeChanges({
+    added: function(url, service) {
+      added.push(url);
+    },
+    removed: function(url) {
+      removed.push(url);
+    }
+  });
+  h.stop();
+
+  MongoBackend.sendHeartbeat("av", "url3", "service", 500);
+  Meteor._sleepForMs(100);
+
+  test.equal(added, ['url2', 'url']);
+  test.equal(removed, []);
+  done();
 });
