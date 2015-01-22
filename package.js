@@ -26,7 +26,9 @@ Package.onUse(function(api) {
 
 function configurePackage(api) {
   api.versionsFrom('METEOR@0.9.2');
-  api.use(['mongo-livedata', 'tracker', 'ddp'], ['server', 'client']);
+  api.use([
+    'mongo-livedata', 'tracker', 'ddp', 'minimongo'
+  ], ['server', 'client']);
   api.use('meteorhacks:picker@1.0.1', 'server');
   api.use('meteorhacks:inject-data@1.2.1')
 

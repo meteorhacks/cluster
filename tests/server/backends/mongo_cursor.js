@@ -20,6 +20,20 @@ function(test) {
   test.equal(result[1].url, "url");
 });
 
+Tinytest.add("Backends - MongoCursor - filter fields",
+function(test) {
+  MongoBackend._services.remove({});
+  MongoBackend.sendHeartbeat("av", "url", "serviceName", 15000);
+  MongoBackend.sendHeartbeat("av", "url2", "serviceName", 15000);
+
+  var options = {limit: 2, fields: {url: 1, service: 1}}
+  var cursor = new MongoBackend.Cursor("serviceName", {}, options);
+  var result = cursor.fetch();
+  test.equal(result[0], {service: "serviceName", url: "url2", _id: "url2"});
+  test.equal(result[1], {service: "serviceName", url: "url", _id: "url"});
+});
+
+
 Tinytest.add("Backends - MongoCursor - limiting",
 function(test) {
   MongoBackend._services.remove({});
