@@ -6,7 +6,8 @@ Package.describe({
 });
 
 Npm.depends({
-  "cookies": "0.5.0"
+  "cookies": "0.5.0",
+  "http-proxy": "1.8.1"
 });
 
 Package.onTest(function(api) {
