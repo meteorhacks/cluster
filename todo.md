@@ -29,3 +29,6 @@
 
 - * Send Multiple Servers to the client (for backups)
 * Add pooling support in the server
+* Add priority system to pick servers
+* Add a session timeout to switch long sessions (via ddp)
+* if an user calls `.disconnect` then don't auto reconnect
