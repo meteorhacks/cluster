@@ -36,12 +36,14 @@ function configurePackage(api) {
   api.use('meteorhacks:inject-data@1.2.1')
 
   api.addFiles([
-
+    'lib/namespace.js',
+    'lib/proxy_connection.js',
   ], ['server', 'client']);
 
   api.addFiles([
     'lib/server/discovery_backends/mongo/store.js',
     'lib/server/discovery_backends/mongo/discovery.js',
+    'lib/server/api.js'
   ], ['server']);
 
   api.addFiles([
