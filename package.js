@@ -16,6 +16,7 @@ Package.onTest(function(api) {
 
   api.addFiles([
     'tests/server/discovery_backends/mongo/store.js',
+    'tests/server/discovery_backends/mongo/discovery.js',
   ], 'server');
 });
 
@@ -40,6 +41,7 @@ function configurePackage(api) {
 
   api.addFiles([
     'lib/server/discovery_backends/mongo/store.js',
+    'lib/server/discovery_backends/mongo/discovery.js',
   ], ['server']);
 
   api.addFiles([
