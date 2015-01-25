@@ -9,6 +9,18 @@ Tinytest.add("MongoDiscoveryStore - set and get methods", function(test) {
   test.equal(store.byEndpointHash("aaa"), doc);
 });
 
+Tinytest.add("MongoDiscoveryStore - set twice and get", function(test) {
+  var store = new MongoDiscoveryStore();
+  var doc = {endpointHash: "aaa", serviceName: "sname"};
+  store.set("one", doc);
+  store.set("one", doc);
+
+  test.equal(store.get("one"), doc);
+  test.equal(store.getAll(), [doc]);
+  test.equal(store.getAll("sname"), [doc]);
+  test.equal(store.byEndpointHash("aaa"), doc);
+});
+
 Tinytest.add("MongoDiscoveryStore - set and remove", function(test) {
   var store = new MongoDiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname"};

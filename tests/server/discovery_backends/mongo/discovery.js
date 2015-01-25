@@ -263,7 +263,7 @@ Tinytest.add("MongoDiscovery - pickBalancer - doesn't exist", function(test) {
   WithNewConnection(function() {
     Meteor._sleepForMs(50);
     var endpoint = MongoDiscovery.pickBalancer();
-    test.equal(endpoint, process.env.ROOT_URL);
+    test.equal(endpoint, undefined);
   });
 });
 
