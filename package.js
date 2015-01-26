@@ -16,9 +16,11 @@ Package.onTest(function(api) {
   api.use('practicalmeteor:sinon@1.10.3_2');
 
   api.addFiles([
+    'tests/server/utils.js',
     'tests/server/discovery_backends/mongo/store.js',
     'tests/server/discovery_backends/mongo/discovery.js',
-    'tests/server/balancer_unit.js',
+    'tests/server/balancer_private.js',
+    'tests/server/balancer_public.js',
   ], 'server');
 });
 

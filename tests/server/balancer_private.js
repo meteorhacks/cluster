@@ -1,4 +1,4 @@
-Tinytest.add("Balancer Unit - _urlToTarget", function(test) {
+Tinytest.add("Balancer - _urlToTarget", function(test) {
   var url = "http://abc.hello.com:8000";
   var target = Balancer._urlToTarget(url);
   test.equal(target, {
@@ -7,7 +7,7 @@ Tinytest.add("Balancer Unit - _urlToTarget", function(test) {
   });
 });
 
-Tinytest.add("Balancer Unit - _pickAndSetEndpointHash - has endpoint",
+Tinytest.add("Balancer - _pickAndSetEndpointHash - has endpoint",
 function(test) {
   var hash = "the-hash";
   var discovery = {
@@ -24,7 +24,7 @@ function(test) {
   });
 });
 
-Tinytest.add("Balancer Unit - _pickAndSetEndpointHash - no endpoint",
+Tinytest.add("Balancer - _pickAndSetEndpointHash - no endpoint",
 function(test) {
   var hash = "the-hash";
   var discovery = {
@@ -42,7 +42,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _pickEndpoint - with nullHash and didn't get a hash",
+"Balancer - _pickEndpoint - with nullHash and didn't get a hash",
 function(test) {
   var hash = "the-hash";
   var endpoint = "the-endpoint";
@@ -63,7 +63,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _pickEndpoint - with nullHash and get a hash",
+"Balancer - _pickEndpoint - with nullHash and get a hash",
 function(test) {
   var hash = "the-hash";
   var endpoint = "the-endpoint";
@@ -84,7 +84,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _pickEndpoint - have hash but no endpoint - retried",
+"Balancer - _pickEndpoint - have hash but no endpoint - retried",
 function(test) {
   var hash = "the-hash";
   var endpoint = "the-endpoint";
@@ -109,7 +109,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _pickEndpoint - have hash but no endpoint - only one retry",
+"Balancer - _pickEndpoint - have hash but no endpoint - only one retry",
 function(test) {
   var hash = "the-hash";
   var endpoint = "the-endpoint";
@@ -134,7 +134,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _pickJustEndpoint - no hash provided",
+"Balancer - _pickJustEndpoint - no hash provided",
 function(test) {
   var endpoint = "end-point";
   var discovery = {
@@ -149,7 +149,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _pickJustEndpoint - hash provided, has endpoint",
+"Balancer - _pickJustEndpoint - hash provided, has endpoint",
 function(test) {
   var endpoint = "end-point";
   var hash = "the-hash";
@@ -165,7 +165,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _pickJustEndpoint - hash provided, no endpoint",
+"Balancer - _pickJustEndpoint - hash provided, no endpoint",
 function(test) {
   var endpoint = "end-point";
   var hash = "the-hash";
@@ -184,7 +184,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _pickAndSetBalancer - there is a balancer",
+"Balancer - _pickAndSetBalancer - there is a balancer",
 function(test) {
   var balancer = "the-balancer";
   var discovery = {
@@ -201,7 +201,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _pickAndSetBalancer - there is no balancer",
+"Balancer - _pickAndSetBalancer - there is no balancer",
 function(test) {
   var balancer = "the-balancer";
   var discovery = {
@@ -218,7 +218,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _proxyWeb - no error",
+"Balancer - _proxyWeb - no error",
 function(test) {
   var req = {aa: 10};
   var res = {bb: 10};
@@ -243,7 +243,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _proxyWeb - error and retry",
+"Balancer - _proxyWeb - error and retry",
 function(test) {
   var req = {aa: 10};
   var res = {bb: 10};
@@ -281,7 +281,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _proxyWeb - max retries 2",
+"Balancer - _proxyWeb - max retries 2",
 function(test) {
   var req = {aa: 10};
   var res = {bb: 10, end: sinon.spy()};
@@ -321,7 +321,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _proxyWS - no error",
+"Balancer - _proxyWS - no error",
 function(test) {
   var req = {aa: 10};
   var socket = {bb: 10};
@@ -347,7 +347,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer Unit - _proxyWS - with error",
+"Balancer - _proxyWS - with error",
 function(test) {
   var req = {aa: 10};
   var socket = {bb: 10};
@@ -375,10 +375,3 @@ function(test) {
   proxyMock.verify();
   proxyMock.restore();
 });
-
-function WithDiscovery(newDiscovery, fn) {
-  var oldDiscovery = ClusterManager.discovery;
-  ClusterManager.discovery = newDiscovery;
-  fn();
-  ClusterManager.discovery = oldDiscovery;
-}
