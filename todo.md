@@ -9,3 +9,6 @@ try to make the code reusable
 -   reset cookies (remove)
 - do the client service delivery
 - support websocket URL based service delivery
+- make cookie reset time to be around 1hour
+-   so we can assume better distribution
+- add an special api to reblance requests

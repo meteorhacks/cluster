@@ -13,10 +13,12 @@ Npm.depends({
 Package.onTest(function(api) {
   configurePackage(api);
   api.use('tinytest');
+  api.use('practicalmeteor:sinon@1.10.3_2');
 
   api.addFiles([
     'tests/server/discovery_backends/mongo/store.js',
     'tests/server/discovery_backends/mongo/discovery.js',
+    'tests/server/balancer_unit.js',
   ], 'server');
 });
 
@@ -42,6 +44,7 @@ function configurePackage(api) {
   api.addFiles([
     'lib/server/discovery_backends/mongo/store.js',
     'lib/server/discovery_backends/mongo/discovery.js',
+    'lib/server/utils.js',
     'lib/server/api.js',
     'lib/server/balancer.js'
   ], ['server']);
