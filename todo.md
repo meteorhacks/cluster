@@ -12,3 +12,4 @@ try to make the code reusable
 - make cookie reset time to be around 1hour
 -   so we can assume better distribution
 - add an special api to reblance requests
+- auto config
