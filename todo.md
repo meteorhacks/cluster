@@ -2,11 +2,12 @@
 
 Error handling when proxing (now it crashes the server)
 try to make the code reusable
-- test balancer code
-- try to make the use of balancer
-- try to send services to the client and publications
-- with that try to load balance locally, when a server got disconnected
--   reset cookies (remove)
+test balancer code
+try to make the use of balancer
+try to send services to the client and publications
+with that try to load balance locally, when a server got disconnected
+- test new changes to the balancer
+- test store
 - do the client service delivery
 - support websocket URL based service delivery
 - make cookie reset time to be around 1hour

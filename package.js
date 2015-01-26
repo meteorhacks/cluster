@@ -36,7 +36,7 @@ function configurePackage(api) {
     'mongo-livedata', 'tracker', 'ddp', 'minimongo',
     'underscore'
   ], ['server', 'client']);
-  api.use('meteorhacks:picker@1.0.1', 'server');
+  api.use('chuangbo:cookie@1.1.0', 'client');
 
   api.addFiles([
     'lib/namespace.js',
@@ -45,6 +45,7 @@ function configurePackage(api) {
 
   api.addFiles([
     'lib/server/discovery_backends/mongo/store.js',
+    'lib/server/discovery_backends/mongo/balancer_cursor.js',
     'lib/server/discovery_backends/mongo/discovery.js',
     'lib/server/utils.js',
     'lib/server/api.js',
@@ -52,6 +53,6 @@ function configurePackage(api) {
   ], ['server']);
 
   api.addFiles([
-
+    'lib/client/connect_balancer.js'
   ], ['client']);
 }
