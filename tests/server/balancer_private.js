@@ -326,83 +326,76 @@ function(test) {
 });
 
 Tinytest.add(
-'Balancer - _setBalanceUrlHeader - has balancer url',
+'Balancer - _setFromBalanceUrlHeader',
 function(test) {
-  var balancerUrl = "burl";
-  var discovery = {
-    pickBalancer: sinon.stub().returns(balancerUrl)
-  };
   var req = {headers: {}};
+  Balancer._setFromBalanceUrlHeader(req);
+  test.equal(req.headers, {"from-balancer": "YES"});
+});
+
+Tinytest.add(
+'Balancer - _rewriteDdpUrl - cluster ddp urls',
+function(test) {
+  var hash = "somehash56";
+  var originalSockJsUrl = "/sds/998";
+  var req = {url: "/cluster-ddp/" + hash + originalSockJsUrl};
+  var hash = Balancer._rewriteDdpUrl(req)
+  test.equal(hash, hash);
+  test.equal(req.url, "/sockjs" + originalSockJsUrl);
+});
+
+Tinytest.add(
+'Balancer - _rewriteDdpUrl - some other urls',
+function(test) {
+  var url = "someUrl"
+  var req = {url: url};
+  var hash = Balancer._rewriteDdpUrl(req)
+  test.equal(hash, undefined);
+  test.equal(req.url, url);
+});
+
+Tinytest.add('Balancer - _sendSockJsInfo - correct base_url', function(test) {
+  var balancer = "http://balancer.com";
+  var endpoint = "epoint";
+  var hash = "hashhh";
+  var discovery = {
+    endpointToHash: sinon.stub().returns(hash)
+  };
+
+  var req = {};
+  var res = {writeHead: sinon.stub(), end: sinon.stub()};
 
   WithDiscovery(discovery, function() {
-    Balancer._setBalanceUrlHeader(req);
-    test.equal(req.headers, {"from-balancer": balancerUrl});
-    test.isTrue(discovery.pickBalancer.calledOnce);
+    Balancer._sendSockJsInfo(req, res, endpoint, balancer);
+    test.isTrue(discovery.endpointToHash.calledWith(endpoint));
+    var info = JSON.parse(res.end.firstCall.args[0]);
+    test.equal(info.base_url, balancer + "/cluster-ddp/" + hash);
+    test.equal(info.websocket, true);
   });
 });
 
-Tinytest.add(
-'Balancer - _setBalanceUrlHeader - has no balancer url',
-function(test) {
-  var balancerUrl = undefined;
+Tinytest.add('Balancer - _sendSockJsInfo - websocket', function(test) {
+  var balancer = "http://balancer.com";
+  var endpoint = "epoint";
+  var hash = "hashhh";
   var discovery = {
-    pickBalancer: sinon.stub().returns(balancerUrl)
+    endpointToHash: sinon.stub().returns(hash)
   };
-  var req = {headers: {}};
+
+  var req = {};
+  var res = {writeHead: sinon.stub(), end: sinon.stub()};
 
   WithDiscovery(discovery, function() {
-    Balancer._setBalanceUrlHeader(req);
-    test.equal(req.headers, {"from-balancer": "1"});
-    test.isTrue(discovery.pickBalancer.calledOnce);
+    var originalEnv = process.env;
+    process.env['DISABLE_WEBSOCKETS'] = "1";
+
+    Balancer._sendSockJsInfo(req, res, endpoint, balancer);
+    test.isTrue(discovery.endpointToHash.calledWith(endpoint));
+    var info = JSON.parse(res.end.firstCall.args[0]);
+    test.equal(info.websocket, false);
+
+    process.env = originalEnv;
   });
-});
-
-Tinytest.add(
-'Balancer - _pushBalancerUrl - with from-balancer header',
-function(test) {
-  var balancerUrl = "burl";
-  var req = {
-    headers: {"from-balancer": balancerUrl}
-  };
-  var res = {
-    pushData: sinon.spy()
-  };
-
-  Balancer._pushBalancerUrl(req, res);
-
-  test.isTrue(res.pushData.calledWith("cluster-balancer-url", balancerUrl));
-});
-
-Tinytest.add(
-'Balancer - _pushBalancerUrl - with no from-balancer header',
-function(test) {
-  var balancerUrl = "burl";
-  var req = {
-    headers: {}
-  };
-  var res = {
-    pushData: sinon.spy()
-  };
-
-  Balancer._pushBalancerUrl(req, res);
-
-  test.isFalse(res.pushData.called);
-});
-
-Tinytest.add(
-'Balancer - _pushBalancerUrl - with from-balancer header == "1"',
-function(test) {
-  var balancerUrl = "burl";
-  var req = {
-    headers: {"from-balancer": "1"}
-  };
-  var res = {
-    pushData: sinon.spy()
-  };
-
-  Balancer._pushBalancerUrl(req, res);
-
-  test.isFalse(res.pushData.called);
 });
 
 Tinytest.add(
