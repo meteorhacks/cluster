@@ -247,6 +247,45 @@ function(test) {
 });
 
 Tinytest.add(
+"Balancer - _proxyWeb - sockjs long polling support",
+function(test) {
+  var req = {url: "/sockjs/something-else"};
+  var res = {bb: 10, setTimeout: sinon.stub()};
+  var endpoint = "http://aa.com:8000";
+  var cookies = {};
+
+  var target = {
+    host: "aa.com",
+    port: "8000"
+  };
+  var options = {target: target};
+  var error = {message: "this-is-an-error"};
+
+  var proxyMock = sinon.mock(Balancer.proxy);
+  proxyMock.expects("web")
+    .exactly(2)
+    .withArgs(req, res, options)
+    .onCall(0).callsArgWith(3, error);
+
+  var balancerMock = sinon.mock(Balancer);
+  balancerMock.expects("_pickEndpoint")
+    .exactly(1)
+    .withArgs(null, cookies)
+    .returns(endpoint);
+
+  Balancer._proxyWeb(req, res, endpoint, cookies);
+
+  Meteor._sleepForMs(50);
+
+  test.isTrue(res.setTimeout.calledWith(2 * 60 * 1000));
+  balancerMock.verify();
+  balancerMock.restore();
+
+  proxyMock.verify();
+  proxyMock.restore();
+});
+
+Tinytest.add(
 "Balancer - _proxyWeb - max retries 2",
 function(test) {
   var req = {aa: 10};
