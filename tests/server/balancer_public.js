@@ -43,11 +43,16 @@ function(test) {
   balancerMock.expects('_proxyWeb')
     .withArgs(expectedReq, res, endpointUrl);
 
-  WithDiscovery({}, function() {
+  var discovery = {
+    hasBalancer: sinon.spy(sinon.stub().returns(true))
+  };
+
+  WithDiscovery(discovery, function() {
     var result = Balancer.handleHttp(req, res);
     test.equal(result, true);
     Meteor._sleepForMs(50);
 
+    test.isTrue(discovery.hasBalancer.calledWith(balancerUrl));
     balancerMock.verify();
     balancerMock.restore();
     cookiesProto.get = originalGet;
@@ -79,11 +84,58 @@ function(test) {
   balancerMock.expects('_proxyWeb').withArgs(expectedReq);
   balancerMock.expects('_pickAndSetBalancer').returns(balancerUrl);
 
-  WithDiscovery({}, function() {
+  var discovery = {
+    hasBalancer: sinon.spy(sinon.stub())
+  };
+
+  WithDiscovery(discovery, function() {
     var result = Balancer.handleHttp({headers: {}}, {});
     test.equal(result, true);
     Meteor._sleepForMs(50);
 
+    test.isFalse(discovery.hasBalancer.called);
+    balancerMock.verify();
+    balancerMock.restore();
+    cookiesProto.get = originalGet;
+  });
+});
+
+Tinytest.add("Balancer - handleHttp - balancerUrl cookie but no exists",
+function(test) {
+  var balancerUrl = "burl";
+  var balancerUrlInvalid = "burlInvalid";
+  var endpointHash = "hash";
+  var endpointUrl = "endpointUrl";
+
+  var expectedReq = {
+    headers: {'from-balancer': balancerUrl}
+  };
+
+  var cookiesProto = Npm.require('cookies').prototype;
+  var originalGet = cookiesProto.get;
+  cookiesProto.get = sinon.stub();
+
+  cookiesProto.get
+    .onCall(0).returns(balancerUrlInvalid)
+    .onCall(1).returns(endpointHash);
+
+  var balancerMock = sinon.mock(Balancer);
+  balancerMock.expects('_pickEndpoint')
+    .withArgs(endpointHash)
+    .returns(endpointUrl);
+  balancerMock.expects('_proxyWeb').withArgs(expectedReq);
+  balancerMock.expects('_pickAndSetBalancer').returns(balancerUrl);
+
+  var discovery = {
+    hasBalancer: sinon.spy(sinon.stub().returns(false))
+  };
+
+  WithDiscovery(discovery, function() {
+    var result = Balancer.handleHttp({headers: {}}, {});
+    test.equal(result, true);
+    Meteor._sleepForMs(50);
+
+    test.isTrue(discovery.hasBalancer.calledWith(balancerUrlInvalid));
     balancerMock.verify();
     balancerMock.restore();
     cookiesProto.get = originalGet;
@@ -113,11 +165,16 @@ function(test) {
     .withArgs(endpointHash)
     .returns(false);
 
-  WithDiscovery({}, function() {
+  var discovery = {
+    hasBalancer: sinon.spy(sinon.stub().returns(true))
+  };
+
+  WithDiscovery(discovery, function() {
     var result = Balancer.handleHttp({headers: {}}, {});
     test.equal(result, false);
     Meteor._sleepForMs(50);
 
+    test.isTrue(discovery.hasBalancer.calledWith(balancerUrl));
     balancerMock.verify();
     balancerMock.restore();
     cookiesProto.get = originalGet;

@@ -209,11 +209,11 @@ function(test) {
   }
 
   WithDiscovery(discovery, function() {
-    var cookies = {set: sinon.spy()};
+    var cookies = {remove: sinon.spy()};
     var result = Balancer._pickAndSetBalancer(cookies);
 
     test.equal(result, false);
-    test.isFalse(cookies.set.called);
+    test.isTrue(cookies.remove.calledOnce);
   });
 });
 
