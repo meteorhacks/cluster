@@ -6,7 +6,7 @@ test balancer code
 try to make the use of balancer
 try to send services to the client and publications
 with that try to load balance locally, when a server got disconnected
-- test new changes to the balancer
+test new changes to the balancer
 - test store
 - do the client service delivery
 - support websocket URL based service delivery

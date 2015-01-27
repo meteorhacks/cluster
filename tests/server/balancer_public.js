@@ -7,11 +7,18 @@ Tinytest.add("Balancer - handleHttp - no discovery", function(test) {
 
 Tinytest.add("Balancer - handleHttp - from balancer header", function(test) {
   WithDiscovery({}, function() {
-    var res = {
+    var req = {
       headers: {"from-balancer": "http://balancer.com"}
     };
-    var result = Balancer.handleHttp(res);
+    var res = {};
+    var balancerMock = sinon.mock(Balancer);
+    balancerMock.expects("_pushBalancerUrl").once().withArgs(req, res);
+
+    var result = Balancer.handleHttp(req, res);
+
     test.equal(result, false);
+    balancerMock.verify();
+    balancerMock.restore();
   });
 
 });
@@ -24,118 +31,28 @@ function(test) {
 
   var req = {headers: {}};
   var res = {};
-  var expectedReq = {
-    headers: {'from-balancer': balancerUrl}
-  };
 
   var cookiesProto = Npm.require('cookies').prototype;
   var originalGet = cookiesProto.get;
   cookiesProto.get = sinon.stub();
 
   cookiesProto.get
-    .onCall(0).returns(balancerUrl)
-    .onCall(1).returns(endpointHash);
+    .onCall(0).returns(endpointHash)
 
   var balancerMock = sinon.mock(Balancer);
   balancerMock.expects('_pickEndpoint')
     .withArgs(endpointHash)
     .returns(endpointUrl);
+  balancerMock.expects('_setBalanceUrlHeader')
+    .withArgs(req);
   balancerMock.expects('_proxyWeb')
-    .withArgs(expectedReq, res, endpointUrl);
+    .withArgs(req, res, endpointUrl);
 
-  var discovery = {
-    hasBalancer: sinon.spy(sinon.stub().returns(true))
-  };
-
-  WithDiscovery(discovery, function() {
+  WithDiscovery({}, function() {
     var result = Balancer.handleHttp(req, res);
     test.equal(result, true);
     Meteor._sleepForMs(50);
 
-    test.isTrue(discovery.hasBalancer.calledWith(balancerUrl));
-    balancerMock.verify();
-    balancerMock.restore();
-    cookiesProto.get = originalGet;
-  });
-});
-
-Tinytest.add("Balancer - handleHttp - no balancer URL cookie",
-function(test) {
-  var balancerUrl = "burl";
-  var endpointHash = "hash";
-  var endpointUrl = "endpointUrl";
-
-  var expectedReq = {
-    headers: {'from-balancer': balancerUrl}
-  };
-
-  var cookiesProto = Npm.require('cookies').prototype;
-  var originalGet = cookiesProto.get;
-  cookiesProto.get = sinon.stub();
-
-  cookiesProto.get
-    .onCall(0).returns(false)
-    .onCall(1).returns(endpointHash);
-
-  var balancerMock = sinon.mock(Balancer);
-  balancerMock.expects('_pickEndpoint')
-    .withArgs(endpointHash)
-    .returns(endpointUrl);
-  balancerMock.expects('_proxyWeb').withArgs(expectedReq);
-  balancerMock.expects('_pickAndSetBalancer').returns(balancerUrl);
-
-  var discovery = {
-    hasBalancer: sinon.spy(sinon.stub())
-  };
-
-  WithDiscovery(discovery, function() {
-    var result = Balancer.handleHttp({headers: {}}, {});
-    test.equal(result, true);
-    Meteor._sleepForMs(50);
-
-    test.isFalse(discovery.hasBalancer.called);
-    balancerMock.verify();
-    balancerMock.restore();
-    cookiesProto.get = originalGet;
-  });
-});
-
-Tinytest.add("Balancer - handleHttp - balancerUrl cookie but no exists",
-function(test) {
-  var balancerUrl = "burl";
-  var balancerUrlInvalid = "burlInvalid";
-  var endpointHash = "hash";
-  var endpointUrl = "endpointUrl";
-
-  var expectedReq = {
-    headers: {'from-balancer': balancerUrl}
-  };
-
-  var cookiesProto = Npm.require('cookies').prototype;
-  var originalGet = cookiesProto.get;
-  cookiesProto.get = sinon.stub();
-
-  cookiesProto.get
-    .onCall(0).returns(balancerUrlInvalid)
-    .onCall(1).returns(endpointHash);
-
-  var balancerMock = sinon.mock(Balancer);
-  balancerMock.expects('_pickEndpoint')
-    .withArgs(endpointHash)
-    .returns(endpointUrl);
-  balancerMock.expects('_proxyWeb').withArgs(expectedReq);
-  balancerMock.expects('_pickAndSetBalancer').returns(balancerUrl);
-
-  var discovery = {
-    hasBalancer: sinon.spy(sinon.stub().returns(false))
-  };
-
-  WithDiscovery(discovery, function() {
-    var result = Balancer.handleHttp({headers: {}}, {});
-    test.equal(result, true);
-    Meteor._sleepForMs(50);
-
-    test.isTrue(discovery.hasBalancer.calledWith(balancerUrlInvalid));
     balancerMock.verify();
     balancerMock.restore();
     cookiesProto.get = originalGet;
@@ -157,24 +74,18 @@ function(test) {
   cookiesProto.get = sinon.stub();
 
   cookiesProto.get
-    .onCall(0).returns(balancerUrl)
-    .onCall(1).returns(endpointHash);
+    .onCall(0).returns(endpointHash)
 
   var balancerMock = sinon.mock(Balancer);
   balancerMock.expects('_pickEndpoint')
     .withArgs(endpointHash)
     .returns(false);
 
-  var discovery = {
-    hasBalancer: sinon.spy(sinon.stub().returns(true))
-  };
-
-  WithDiscovery(discovery, function() {
+  WithDiscovery({}, function() {
     var result = Balancer.handleHttp({headers: {}}, {});
     test.equal(result, false);
     Meteor._sleepForMs(50);
 
-    test.isTrue(discovery.hasBalancer.calledWith(balancerUrl));
     balancerMock.verify();
     balancerMock.restore();
     cookiesProto.get = originalGet;
@@ -235,14 +146,15 @@ Tinytest.add("Balancer - handleWs - process okay", function(test) {
   var socket = {};
   var head = {};
 
-  var expectedReq = {headers: {'from-balancer': process.env.ROOT_URL}};
-
   var balancerMock = sinon.mock(Balancer);
   balancerMock
     .expects('_pickJustEndpoint').returns(endpointUrl);
   balancerMock
+    .expects('_setBalanceUrlHeader')
+    .withArgs(req);
+  balancerMock
     .expects('_proxyWs')
-    .withArgs(expectedReq, socket, head, endpointUrl);
+    .withArgs(req, socket, head, endpointUrl);
 
   WithDiscovery({}, function() {
     var result = Balancer.handleWs(req, socket, head);

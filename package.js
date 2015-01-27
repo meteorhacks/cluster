@@ -36,7 +36,7 @@ function configurePackage(api) {
     'mongo-livedata', 'tracker', 'ddp', 'minimongo',
     'underscore'
   ], ['server', 'client']);
-  api.use('chuangbo:cookie@1.1.0', 'client');
+  api.use('meteorhacks:inject-data@1.2.2', ['server', 'client']);
 
   api.addFiles([
     'lib/namespace.js',

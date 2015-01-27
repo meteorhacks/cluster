@@ -11,7 +11,7 @@ Tinytest.add("Balancer - _pickAndSetEndpointHash - has endpoint",
 function(test) {
   var hash = "the-hash";
   var discovery = {
-    pickEndpointHash: sinon.spy(sinon.stub().returns(hash))
+    pickEndpointHash: sinon.stub().returns(hash)
   };
 
   WithDiscovery(discovery, function() {
@@ -28,7 +28,7 @@ Tinytest.add("Balancer - _pickAndSetEndpointHash - no endpoint",
 function(test) {
   var hash = "the-hash";
   var discovery = {
-    pickEndpointHash: sinon.spy(sinon.stub().returns(null))
+    pickEndpointHash: sinon.stub().returns(null)
   };
 
   WithDiscovery(discovery, function() {
@@ -47,7 +47,7 @@ function(test) {
   var hash = "the-hash";
   var endpoint = "the-endpoint";
   var discovery = {
-    hashToEndpoint: sinon.spy(sinon.stub().returns(false))
+    hashToEndpoint: sinon.stub().returns(false)
   }
 
   WithDiscovery(discovery, function() {
@@ -68,7 +68,7 @@ function(test) {
   var hash = "the-hash";
   var endpoint = "the-endpoint";
   var discovery = {
-    hashToEndpoint: sinon.spy(sinon.stub().returns(endpoint))
+    hashToEndpoint: sinon.stub().returns(endpoint)
   }
 
   WithDiscovery(discovery, function() {
@@ -138,7 +138,7 @@ Tinytest.add(
 function(test) {
   var endpoint = "end-point";
   var discovery = {
-    pickEndpoint: sinon.spy(sinon.stub().returns(endpoint))
+    pickEndpoint: sinon.stub().returns(endpoint)
   }
 
   WithDiscovery(discovery, function() {
@@ -154,7 +154,7 @@ function(test) {
   var endpoint = "end-point";
   var hash = "the-hash";
   var discovery = {
-    hashToEndpoint: sinon.spy(sinon.stub().returns(endpoint))
+    hashToEndpoint: sinon.stub().returns(endpoint)
   }
 
   WithDiscovery(discovery, function() {
@@ -170,8 +170,8 @@ function(test) {
   var endpoint = "end-point";
   var hash = "the-hash";
   var discovery = {
-    hashToEndpoint: sinon.spy(sinon.stub().returns(false)),
-    pickEndpoint: sinon.spy(sinon.stub().returns(endpoint))
+    hashToEndpoint: sinon.stub().returns(false),
+    pickEndpoint: sinon.stub().returns(endpoint)
   }
 
   WithDiscovery(discovery, function() {
@@ -180,40 +180,6 @@ function(test) {
 
     test.isTrue(discovery.hashToEndpoint.calledWith(hash));
     test.isTrue(discovery.pickEndpoint.calledWith("web"));
-  });
-});
-
-Tinytest.add(
-"Balancer - _pickAndSetBalancer - there is a balancer",
-function(test) {
-  var balancer = "the-balancer";
-  var discovery = {
-    pickBalancer: sinon.spy(sinon.stub().returns(balancer))
-  }
-
-  WithDiscovery(discovery, function() {
-    var cookies = {set: sinon.spy()};
-    var result = Balancer._pickAndSetBalancer(cookies);
-
-    test.equal(result, balancer);
-    test.isTrue(cookies.set.calledWith("cluster-balancer", balancer));
-  });
-});
-
-Tinytest.add(
-"Balancer - _pickAndSetBalancer - there is no balancer",
-function(test) {
-  var balancer = "the-balancer";
-  var discovery = {
-    pickBalancer: sinon.spy(sinon.stub().returns(false))
-  }
-
-  WithDiscovery(discovery, function() {
-    var cookies = {remove: sinon.spy()};
-    var result = Balancer._pickAndSetBalancer(cookies);
-
-    test.equal(result, false);
-    test.isTrue(cookies.remove.calledOnce);
   });
 });
 
@@ -318,6 +284,86 @@ function(test) {
 
   proxyMock.verify();
   proxyMock.restore();
+});
+
+Tinytest.add(
+'Balancer - _setBalanceUrlHeader - has balancer url',
+function(test) {
+  var balancerUrl = "burl";
+  var discovery = {
+    pickBalancer: sinon.stub().returns(balancerUrl)
+  };
+  var req = {headers: {}};
+
+  WithDiscovery(discovery, function() {
+    Balancer._setBalanceUrlHeader(req);
+    test.equal(req.headers, {"from-balancer": balancerUrl});
+    test.isTrue(discovery.pickBalancer.calledOnce);
+  });
+});
+
+Tinytest.add(
+'Balancer - _setBalanceUrlHeader - has no balancer url',
+function(test) {
+  var balancerUrl = undefined;
+  var discovery = {
+    pickBalancer: sinon.stub().returns(balancerUrl)
+  };
+  var req = {headers: {}};
+
+  WithDiscovery(discovery, function() {
+    Balancer._setBalanceUrlHeader(req);
+    test.equal(req.headers, {"from-balancer": "1"});
+    test.isTrue(discovery.pickBalancer.calledOnce);
+  });
+});
+
+Tinytest.add(
+'Balancer - _pushBalancerUrl - with from-balancer header',
+function(test) {
+  var balancerUrl = "burl";
+  var req = {
+    headers: {"from-balancer": balancerUrl}
+  };
+  var res = {
+    pushData: sinon.spy()
+  };
+
+  Balancer._pushBalancerUrl(req, res);
+
+  test.isTrue(res.pushData.calledWith("cluster-balancer-url", balancerUrl));
+});
+
+Tinytest.add(
+'Balancer - _pushBalancerUrl - with no from-balancer header',
+function(test) {
+  var balancerUrl = "burl";
+  var req = {
+    headers: {}
+  };
+  var res = {
+    pushData: sinon.spy()
+  };
+
+  Balancer._pushBalancerUrl(req, res);
+
+  test.isFalse(res.pushData.called);
+});
+
+Tinytest.add(
+'Balancer - _pushBalancerUrl - with from-balancer header == "1"',
+function(test) {
+  var balancerUrl = "burl";
+  var req = {
+    headers: {"from-balancer": "1"}
+  };
+  var res = {
+    pushData: sinon.spy()
+  };
+
+  Balancer._pushBalancerUrl(req, res);
+
+  test.isFalse(res.pushData.called);
 });
 
 Tinytest.add(
