@@ -109,12 +109,30 @@ Tinytest.add("Balancer - handleWs - from balancer header", function(test) {
   });
 });
 
-Tinytest.add("Balancer - handleWs - no endpoint", function(test) {
-  var cookiesProto = Npm.require('cookies');
+Tinytest.add("Balancer - handleWs - no endpointHash", function(test) {
+  var cookiesProto = Npm.require('cookies').prototype;
   var originalGet = cookiesProto.get;
 
   cookiesProto.get = sinon.stub();
-  cookiesProto.get.returns(false);
+  cookiesProto.get.onCall(0).returns(undefined);
+
+  var res = {headers: {}};
+  var socket = {};
+  var head = {};
+
+  WithDiscovery({}, function() {
+    var result = Balancer.handleWs(res, socket, head);
+    test.equal(result, false);
+    cookiesProto.get = originalGet;
+  });
+});
+
+Tinytest.add("Balancer - handleWs - no endpoint", function(test) {
+  var cookiesProto = Npm.require('cookies').prototype;
+  var originalGet = cookiesProto.get;
+
+  cookiesProto.get = sinon.stub();
+  cookiesProto.get.onCall(0).returns("someHash");
 
   var res = {headers: {}};
   var socket = {};
@@ -136,11 +154,11 @@ Tinytest.add("Balancer - handleWs - no endpoint", function(test) {
 
 Tinytest.add("Balancer - handleWs - process okay", function(test) {
   var endpointUrl = "endpoint-url";
-  var cookiesProto = Npm.require('cookies');
+  var cookiesProto = Npm.require('cookies').prototype;
   var originalGet = cookiesProto.get;
 
   cookiesProto.get = sinon.stub();
-  cookiesProto.get.returns(false);
+  cookiesProto.get.returns("someHash");
 
   var req = {headers: {}};
   var socket = {};
