@@ -36,7 +36,6 @@ function configurePackage(api) {
     'mongo-livedata', 'tracker', 'ddp', 'minimongo',
     'underscore'
   ], ['server', 'client']);
-  api.use('meteorhacks:inject-data@1.2.2', ['server', 'client']);
 
   api.addFiles([
     'lib/namespace.js',
@@ -53,6 +52,5 @@ function configurePackage(api) {
   ], ['server']);
 
   api.addFiles([
-    'lib/client/connect_balancer.js'
   ], ['client']);
 }
