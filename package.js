@@ -44,7 +44,6 @@ function configurePackage(api) {
 
   api.addFiles([
     'lib/server/discovery_backends/mongo/store.js',
-    'lib/server/discovery_backends/mongo/balancer_cursor.js',
     'lib/server/discovery_backends/mongo/discovery.js',
     'lib/server/utils.js',
     'lib/server/api.js',
