@@ -1,8 +1,8 @@
 Package.describe({
-  "summary": "Service Discovery Solution for Meteor Clusters",
-  "version": "1.1.0",
-  "git": "https://github.com/meteorhacks/meteor-collection-utils.git",
-  "name": "meteorhacks:cluster-manager"
+  "summary": "Clustering solution for Meteor with load balancing and service discovery",
+  "version": "1.0.0",
+  "git": "https://github.com/meteorhacks/cluster.git",
+  "name": "meteorhacks:cluster"
 });
 
 Npm.depends({
