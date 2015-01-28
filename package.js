@@ -26,7 +26,7 @@ Package.onTest(function(api) {
 
 Package.onUse(function(api) {
   configurePackage(api);
-  api.export('ClusterManager');
+  api.export('Cluster');
 });
 
 function configurePackage(api) {
@@ -51,5 +51,6 @@ function configurePackage(api) {
   ], ['server']);
 
   api.addFiles([
+    'lib/client/api.js'
   ], ['client']);
 }
