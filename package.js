@@ -47,7 +47,8 @@ function configurePackage(api) {
     'lib/server/discovery_backends/mongo/store.js',
     'lib/server/discovery_backends/mongo/discovery.js',
     'lib/server/utils.js',
-    'lib/server/balancer.js'
+    'lib/server/balancer.js',
+    'lib/server/auto_connect.js'
   ], ['server']);
 
   api.addFiles([
