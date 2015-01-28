@@ -65,23 +65,12 @@ function(test) {
   var endpointHash = "hash";
   var endpointUrl = "endpoint-url";
 
-  var req = {headers: {}, url: "/info?"};
+  var req = {headers: {}, url: "/sockjs/info?"};
   var res = {};
 
-  var cookiesProto = Npm.require('cookies').prototype;
-  var originalGet = cookiesProto.get;
-  cookiesProto.get = sinon.stub();
-
-  cookiesProto.get
-    .onCall(0).returns(endpointHash)
-
   var balancerMock = sinon.mock(Balancer);
-  balancerMock.expects('_rewriteDdpUrl').returns(undefined);
-  balancerMock.expects('_pickEndpoint')
-    .withArgs(endpointHash)
-    .returns(endpointUrl);
   balancerMock.expects('_sendSockJsInfo')
-    .withArgs(req, res, endpointUrl, balancerUrl);
+    .withArgs(req, res);
 
   var discovery = {
     pickBalancer: sinon.stub().returns(balancerUrl)
@@ -94,7 +83,6 @@ function(test) {
 
     balancerMock.verify();
     balancerMock.restore();
-    cookiesProto.get = originalGet;
   });
 });
 
@@ -103,14 +91,18 @@ function(test) {
   var balancerUrl = "burl";
   var endpointHash = "hash";
   var endpointUrl = "endpoint-url";
+  var service = "web";
 
   var req = {headers: {}};
   var res = {};
 
   var balancerMock = sinon.mock(Balancer);
-  balancerMock.expects('_rewriteDdpUrl').returns(endpointHash);
-  balancerMock.expects('_pickEndpoint')
-    .withArgs(endpointHash)
+  balancerMock.expects('_rewriteDdpUrl').returns({
+    hash: endpointHash,
+    service: service
+  });
+  balancerMock.expects('_pickJustEndpoint')
+    .withArgs(endpointHash, service)
     .returns(endpointUrl);
   balancerMock.expects('_setFromBalanceUrlHeader')
     .withArgs(req);
@@ -124,6 +116,40 @@ function(test) {
   WithDiscovery(discovery, function() {
     var result = Balancer.handleHttp(req, res);
     test.equal(result, true);
+    Meteor._sleepForMs(50);
+
+    balancerMock.verify();
+    balancerMock.restore();
+  });
+});
+
+Tinytest.add("Balancer - handleHttp - ddp and no endpoint",
+function(test) {
+  var balancerUrl = "burl";
+  var endpointHash = "hash";
+  var endpointUrl = "endpoint-url";
+  var service = "web";
+
+  var req = {headers: {}};
+  var res = {end: sinon.mock()};
+
+  var balancerMock = sinon.mock(Balancer);
+  balancerMock.expects('_rewriteDdpUrl').returns({
+    hash: endpointHash,
+    service: service
+  });
+  balancerMock.expects('_pickJustEndpoint')
+    .withArgs(endpointHash, service)
+    .returns(undefined);
+
+  var discovery = {
+    pickBalancer: sinon.stub().returns(undefined)
+  };
+
+  WithDiscovery(discovery, function() {
+    var result = Balancer.handleHttp(req, res);
+    test.equal(result, true);
+    test.isTrue(res.end.called);
     Meteor._sleepForMs(50);
 
     balancerMock.verify();
@@ -218,8 +244,8 @@ Tinytest.add("Balancer - handleWs - no endpoint", function(test) {
   var head = {};
 
   var balancerMock = sinon.mock(Balancer);
-  balancerMock.expects('_pickJustEndpoint').returns(false);
   balancerMock.expects('_rewriteDdpUrl').returns(undefined);
+  balancerMock.expects('_pickJustEndpoint').returns(false);
 
   WithDiscovery({}, function() {
     var result = Balancer.handleWs(res, socket, head);
@@ -271,11 +297,18 @@ function(test) {
   var req = {headers: {}};
   var socket = {};
   var head = {};
+  var hash = "hash";
+  var service = "service";
 
   var balancerMock = sinon.mock(Balancer);
-  balancerMock.expects('_rewriteDdpUrl').returns("hash");
+  balancerMock.expects('_rewriteDdpUrl').returns({
+    hash: hash,
+    service: service
+  });
   balancerMock
-    .expects('_pickJustEndpoint').returns(endpointUrl);
+    .expects('_pickJustEndpoint')
+    .withArgs(hash, service)
+    .returns(endpointUrl);
   balancerMock
     .expects('_setFromBalanceUrlHeader')
     .withArgs(req);

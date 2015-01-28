@@ -1,3 +1,5 @@
+var format = Npm.require('util').format;
+
 Tinytest.add("Balancer - _urlToTarget", function(test) {
   var url = "http://abc.hello.com:8000";
   var target = Balancer._urlToTarget(url);
@@ -338,7 +340,9 @@ Tinytest.add(
 function(test) {
   var hash = "somehash56";
   var originalSockJsUrl = "/sds/998";
-  var req = {url: "/cluster-ddp/" + hash + originalSockJsUrl};
+  var url = format('/cluster-ddp/%s/web/%s', hash, originalSockJsUrl);
+
+  var req = {url: url};
   var hash = Balancer._rewriteDdpUrl(req)
   test.equal(hash, hash);
   test.equal(req.url, "/sockjs" + originalSockJsUrl);
@@ -354,47 +358,181 @@ function(test) {
   test.equal(req.url, url);
 });
 
-Tinytest.add('Balancer - _sendSockJsInfo - correct base_url', function(test) {
+Tinytest.add(
+'Balancer - _sendSockJsInfo - correct base_url, web, with balancer',
+function(test) {
   var balancer = "http://balancer.com";
   var endpoint = "epoint";
   var hash = "hashhh";
   var discovery = {
-    endpointToHash: sinon.stub().returns(hash)
+    endpointToHash: sinon.stub().returns(hash),
+    pickBalancer: sinon.stub().returns(balancer),
   };
 
-  var req = {};
+  var cookies = {
+    get: sinon.stub().returns(hash)
+  };
+
+  var balancerMock = sinon.mock(Balancer);
+  balancerMock.expects('_pickJustEndpoint')
+    .withArgs(hash, "web")
+    .returns(endpoint);
+
+  var req = {url: "/web/sockjs/info"};
   var res = {writeHead: sinon.stub(), end: sinon.stub()};
 
   WithDiscovery(discovery, function() {
-    Balancer._sendSockJsInfo(req, res, endpoint, balancer);
+    Balancer._sendSockJsInfo(req, res, cookies);
+
     test.isTrue(discovery.endpointToHash.calledWith(endpoint));
     var info = JSON.parse(res.end.firstCall.args[0]);
-    test.equal(info.base_url, balancer + "/cluster-ddp/" + hash);
+    test.equal(info.base_url, format("%s/cluster-ddp/%s/web", balancer, hash));
     test.equal(info.websocket, true);
+
+    balancerMock.verify();
+    balancerMock.restore();
   });
 });
 
-Tinytest.add('Balancer - _sendSockJsInfo - websocket', function(test) {
+Tinytest.add(
+'Balancer - _sendSockJsInfo - correct base_url, web, with no balancer',
+function(test) {
+  var balancer = null;
+  var endpoint = "epoint";
+  var hash = "hashhh";
+  var discovery = {
+    endpointToHash: sinon.stub().returns(hash),
+    pickBalancer: sinon.stub().returns(balancer),
+  };
+
+  var cookies = {
+    get: sinon.stub().returns(hash)
+  };
+
+  var balancerMock = sinon.mock(Balancer);
+  balancerMock.expects('_pickJustEndpoint')
+    .withArgs(hash, "web")
+    .returns(endpoint);
+
+  var req = {url: "/web/sockjs/info"};
+  var res = {writeHead: sinon.stub(), end: sinon.stub()};
+
+  WithDiscovery(discovery, function() {
+    Balancer._sendSockJsInfo(req, res, cookies);
+
+    test.isTrue(discovery.endpointToHash.calledWith(endpoint));
+    var info = JSON.parse(res.end.firstCall.args[0]);
+    test.equal(info.base_url, format("/cluster-ddp/%s/web", hash));
+    test.equal(info.websocket, true);
+
+    balancerMock.verify();
+    balancerMock.restore();
+  });
+});
+
+Tinytest.add(
+'Balancer - _sendSockJsInfo - correct base_url, public service, with balancer',
+function(test) {
+  var balancer = "http://balancer.com";
+  var endpoint = "epoint";
+  var hash = "hashhh";
+  var serviceName = Random.id();
+
+  var discovery = {
+    endpointToHash: sinon.stub().returns(hash),
+    pickBalancer: sinon.stub().returns(balancer),
+  };
+
+  var balancerMock = sinon.mock(Balancer);
+  balancerMock.expects('_pickJustEndpoint')
+    .withArgs(null, serviceName)
+    .returns(endpoint);
+
+  var req = {url: format("/%s/sockjs/info", serviceName)};
+  var res = {writeHead: sinon.stub(), end: sinon.stub()};
+
+  WithDiscovery(discovery, function() {
+    Cluster.allowPublicAccess(serviceName)
+    Balancer._sendSockJsInfo(req, res);
+
+    test.isTrue(discovery.endpointToHash.calledWith(endpoint));
+    var info = JSON.parse(res.end.firstCall.args[0]);
+    var expectedUrl =
+      format("%s/cluster-ddp/%s/%s", balancer, hash, serviceName);
+    test.equal(info.base_url, expectedUrl);
+    test.equal(info.websocket, true);
+
+    balancerMock.verify();
+    balancerMock.restore();
+  });
+});
+
+Tinytest.add(
+'Balancer - _sendSockJsInfo - correct base_url, private service, with balancer',
+function(test) {
+  var balancer = "http://balancer.com";
+  var endpoint = "epoint";
+  var hash = "hashhh";
+  var serviceName = Random.id();
+
+  var discovery = {
+    pickBalancer: sinon.stub().returns(balancer),
+  };
+
+  var balancerMock = sinon.mock(Balancer);
+
+  var req = {url: format("/%s/sockjs/info", serviceName)};
+  var res = {writeHead: sinon.stub(), end: sinon.stub()};
+
+  WithDiscovery(discovery, function() {
+    Balancer._sendSockJsInfo(req, res);
+
+    var calledArg = res.end.firstCall.args[0];
+    test.isTrue(/no such/.test(calledArg));
+
+    balancerMock.verify();
+    balancerMock.restore();
+  });
+});
+
+Tinytest.add(
+'Balancer - _sendSockJsInfo - correct base_url, web, with balancer, no WS',
+function(test) {
   var balancer = "http://balancer.com";
   var endpoint = "epoint";
   var hash = "hashhh";
   var discovery = {
-    endpointToHash: sinon.stub().returns(hash)
+    endpointToHash: sinon.stub().returns(hash),
+    pickBalancer: sinon.stub().returns(balancer),
   };
 
-  var req = {};
+  var cookies = {
+    get: sinon.stub().returns(hash)
+  };
+
+  var balancerMock = sinon.mock(Balancer);
+  balancerMock.expects('_pickJustEndpoint')
+    .withArgs(hash, "web")
+    .returns(endpoint);
+
+  var req = {url: "/web/sockjs/info"};
   var res = {writeHead: sinon.stub(), end: sinon.stub()};
 
   WithDiscovery(discovery, function() {
     var originalEnv = process.env;
     process.env['DISABLE_WEBSOCKETS'] = "1";
 
-    Balancer._sendSockJsInfo(req, res, endpoint, balancer);
+    Balancer._sendSockJsInfo(req, res, cookies);
+
+    delete process.env['DISABLE_WEBSOCKETS'];
+
     test.isTrue(discovery.endpointToHash.calledWith(endpoint));
     var info = JSON.parse(res.end.firstCall.args[0]);
+    test.equal(info.base_url, format("%s/cluster-ddp/%s/web", balancer, hash));
     test.equal(info.websocket, false);
 
-    process.env = originalEnv;
+    balancerMock.verify();
+    balancerMock.restore();
   });
 });
 
