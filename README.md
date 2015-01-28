@@ -8,8 +8,6 @@ With `cluster`, we can scale meteor apps by **just** installing a Meteor package
 
 When we need to scale Meteor, it's about scaling DDP requests since Meteor does heavy lifting in DDP. This is how we normally do it. We put a load balancer like ngnix or haproxy in front of Meteor. Then, it'll do the load balancing.
 
-![Load Balancing with Haproxy]()
-
 Okay, let's say now we need to add another instance? Then we need to reconfigure the load balancer again. That will reset all the existing DDP connections.
 
 Then what if the load balancer goes down? We need to maintain two or more load balancers.
@@ -89,7 +87,7 @@ I'm using [Meteor Up](https://github.com/arunoda/meteor-up) to deploy and here's
 
 > Make sure to install the latest version of Meteor Up
 
-### DNS & SSL
+#### DNS & SSL
 
 We use cloudflare for DNS and SSL setup.
 > We turn off WebSockets since cloudflare does not support SSL with WebSockets yet!
