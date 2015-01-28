@@ -35,7 +35,7 @@ Then when you are deploying or starting your app, export following environment v
 ~~~shell
 # You can use your existing MONGO_URL for this
 export CLUSTER_DISCOVERY_URL=mongodb://host:port/db,
-# this is the direct URL to your server (it could be private URL)
+# this is the direct URL to your server (it could be a private URL)
 export CLUSTER_ENDPOINT_URL=http://ipaddress
 # mark your server as a web service (this is a must)
 export CLUSTER_SERVICE=web
