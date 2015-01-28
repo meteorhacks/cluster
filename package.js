@@ -43,10 +43,10 @@ function configurePackage(api) {
   ], ['server', 'client']);
 
   api.addFiles([
+    'lib/server/api.js',
     'lib/server/discovery_backends/mongo/store.js',
     'lib/server/discovery_backends/mongo/discovery.js',
     'lib/server/utils.js',
-    'lib/server/api.js',
     'lib/server/balancer.js'
   ], ['server']);
 
