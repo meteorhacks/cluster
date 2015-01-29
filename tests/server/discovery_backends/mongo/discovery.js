@@ -107,16 +107,6 @@ function(test) {
   });
 });
 
-Tinytest.add("MongoDiscovery - register - balancer url by env",
-function(test) {
-  WithNewConnection(function() {
-    process.env.BALANCER_URL="bUrl2";
-    MongoDiscovery.register("hello");
-    delete process.env.BALANCER_URL;
-    test.equal(MongoDiscovery._balancer, "bUrl2");
-  });
-});
-
 Tinytest.add("MongoDiscovery - register - endpoint url by option",
 function(test) {
   WithNewConnection(function() {
@@ -124,16 +114,6 @@ function(test) {
       endpoint: "bUrl"
     });
     test.equal(MongoDiscovery._endpoint, "bUrl");
-  });
-});
-
-Tinytest.add("MongoDiscovery - register - endpoint url by env",
-function(test) {
-  WithNewConnection(function() {
-    process.env.ENDPOINT_URL="eUrl";
-    MongoDiscovery.register("hello");
-    delete process.env.ENDPOINT_URL;
-    test.equal(MongoDiscovery._endpoint, "eUrl");
   });
 });
 
