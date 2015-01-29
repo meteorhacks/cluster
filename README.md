@@ -26,20 +26,20 @@ Cluster can do these things because, it acts as a service discovery solutions. C
 
 Simply add cluster into your app.
 
-~~~
+```
 meteor add meteorhacks:cluster
-~~~
+```
 
 Then when you are deploying or starting your app, export following environment variables.
 
-~~~shell
+```shell
 # You can use your existing MONGO_URL for this
 export CLUSTER_DISCOVERY_URL=mongodb://host:port/db,
-# this is the direct URL to your server (it could be private URL)
+# this is the direct URL to your server (it could be a private URL)
 export CLUSTER_ENDPOINT_URL=http://ipaddress
 # mark your server as a web service (this is a must)
 export CLUSTER_SERVICE=web
-~~~
+```
 
 Now start as many as servers you like and DDP traffic will be sent to each instances randomly.
 
@@ -51,9 +51,9 @@ But that's not ideal. Cluster has a built in solution for that. That's **balance
 
 Making your instance a balancer is pretty simple. Just export the following environment variable.
 
-~~~
+```
 export CLUSTER_BALANCER_URL=https://subdomain.domainname.com
-~~~
+```
 
 This URL is open to the public and it should point to this instance. Now make your instances as balancers and your cluster will start to load balance DDP connections through them.
 
@@ -63,7 +63,7 @@ Let's see how you could setup Cluster in a practical scenario. [BulletProof Mete
 
 We've 4 Servers and Three of them are balancers. This is how they are structured.
 
-~~~json
+```json
 {
   "ip-1": {
     "endpointUrl": "http://ip-1",
@@ -81,7 +81,7 @@ We've 4 Servers and Three of them are balancers. This is how they are structured
     "endpointUrl": "http://ip-4"
   }
 }
-~~~
+```
 
 I'm using [Meteor Up](https://github.com/arunoda/meteor-up) to deploy and here's the [sample configuration](https://gist.github.com/arunoda/13f2e9c22bf526b84556) file. With Meteor Up, you don't need to expose `CLUSTER_ENDPOINT_URL`. It'll do it itself.
 
