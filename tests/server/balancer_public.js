@@ -131,7 +131,7 @@ function(test) {
   var service = "web";
 
   var req = {headers: {}};
-  var res = {end: sinon.mock()};
+  var res = {end: sinon.mock(), writeHead: sinon.mock()};
 
   var balancerMock = sinon.mock(Balancer);
   balancerMock.expects('_rewriteDdpUrl').returns({
@@ -150,6 +150,7 @@ function(test) {
     var result = Balancer.handleHttp(req, res);
     test.equal(result, true);
     test.isTrue(res.end.called);
+    test.isTrue(res.writeHead.calledWith(500));
     Meteor._sleepForMs(50);
 
     balancerMock.verify();

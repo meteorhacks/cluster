@@ -10,6 +10,7 @@ test new changes to the balancer
 test store
 backend registrations
 auto config
+- add mongodb://self url support
 - support websocket URL based service delivery
 - load balance direct websocket connections (both web and discovery)
 - make cookie reset time to be around 1hour

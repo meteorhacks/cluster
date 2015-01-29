@@ -247,62 +247,6 @@ Tinytest.add("MongoDiscovery - pickBalancer - doesn't exist", function(test) {
   });
 });
 
-Tinytest.add("MongoDiscovery - isHealthy - healthy service", function(test) {
-  var healthy = MongoDiscovery._isHealthy({
-    timestamp: new Date(Date.now() - 200),
-    pingInterval: 1000 * 5
-  });
-
-  test.isTrue(healthy);
-});
-
-Tinytest.add("MongoDiscovery - isHealthy - might be a healthy service", function(test) {
-  var healthy = MongoDiscovery._isHealthy({
-    timestamp: new Date(Date.now() - 1000 * 5),
-    pingInterval: 1000 * 5
-  });
-
-  test.isTrue(healthy);
-});
-
-Tinytest.add("MongoDiscovery - isHealthy - not a healthy service", function(test) {
-  var healthy = MongoDiscovery._isHealthy({
-    timestamp: new Date(Date.now() - 1000 * 50),
-    pingInterval: 1000 * 5
-  });
-
-  test.isFalse(healthy);
-});
-
-Tinytest.add("MongoDiscovery - isHealthy - while obeserving", function(test) {
-  var store = new MongoDiscoveryStore();
-  var coll = new Mongo.Collection(Random.id());
-  var doc = {
-    _id: "aa",
-    serviceName: "s",
-    pingInterval: 100,
-    timestamp: new Date()
-  };
-
-  var handler = MongoDiscovery._observerAndStore(coll.find(), store, {
-    healthCheckInterval: 50
-  });
-
-  coll.insert(doc);
-  Meteor._sleepForMs(50);
-  test.equal(store.getAll().length, 1);
-
-  Meteor._sleepForMs(1200);
-  test.equal(store.getAll().length, 0);
-
-  coll.update({_id: doc._id}, {$set: {timestamp: new Date()}});
-  Meteor._sleepForMs(50);
-  test.equal(store.getAll().length, 1);
-
-  handler.stop();
-});
-
-
 function WithNewConnection(fn) {
   MongoDiscovery.connect(process.env.MONGO_URL, {
     collName: Random.id()

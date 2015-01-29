@@ -252,7 +252,7 @@ Tinytest.add(
 "Balancer - _proxyWeb - error and retry, then no endpoint",
 function(test) {
   var req = {aa: 10};
-  var res = {bb: 10, end: sinon.stub()};
+  var res = {bb: 10, end: sinon.stub(), writeHead: sinon.stub()};
   var endpoint = "http://aa.com:8000";
   var cookies = {};
 
@@ -280,6 +280,7 @@ function(test) {
   Meteor._sleepForMs(50);
 
   test.isTrue(res.end.called);
+  test.isTrue(res.writeHead.calledWith(500));
   balancerMock.verify();
   balancerMock.restore();
 
@@ -330,7 +331,7 @@ Tinytest.add(
 "Balancer - _proxyWeb - max retries 2",
 function(test) {
   var req = {aa: 10};
-  var res = {bb: 10, end: sinon.spy()};
+  var res = {bb: 10, end: sinon.spy(), writeHead: sinon.spy()};
   var endpoint = "http://aa.com:8000";
   var cookies = {};
 
@@ -358,6 +359,7 @@ function(test) {
   Meteor._sleepForMs(50);
 
   test.isTrue(res.end.called);
+  test.isTrue(res.writeHead.calledWith(500));
 
   balancerMock.verify();
   balancerMock.restore();
