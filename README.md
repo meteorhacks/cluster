@@ -101,8 +101,119 @@ As this setup, `ip-1` and `ip-2` will take care of load balancing for static con
 
 All 4 servers process DDP and provide Static Content.
 
+## API
+
+We've a very simple API and there are two version of the API. 
+
+1. Using JavaScript
+2. Using Environment Variables
+
+For a production app, it's recommend to use the Environment Variables.
+
+### JS API
+
+~~~js
+// Connect to the cluster with a MongoDB URL. Better if it's a replica set
+Cluster.connect("mongodb://mongo-url")
+
+// Register a service to the cluster
+var options = {
+  endpoint: "a direct url to the instance",
+  balancer: "balancer URL, if this is a balancer" // optional
+};
+
+Cluster.register("serviceName", options);
+
+// Expose a service to the public
+Cluster.allowPublicAccess(["service1", "service2"]);
+
+// Discover a DDP connection
+// > This is available on the both client and the server
+Cluster.discoverConnection("serviceName");
+~~~
+
+### Environment Variable API
+
+~~~bash
+// Connect to the cluster with a MongoDB URL. Better if it's a replica set
+export CLUSTER_DISCOVERY_URL=mongodb://mongo-url
+
+// Register a service to the cluster
+export CLUSTER_ENDPOINT_URL="a direct url to the instance"
+export CLUSTER_BALANCER_URL="balancer URL, if this is a balancer" #optional
+export CLUSTER_SERVICE="serviceName"
+
+// Expose a service to the public
+export CLUTSER_PUBLIC_SERVICES="service1, service2"
+~~~
+
 ## MicroServices
 
-Everything has been implemented, just wait for the docs.
+With Microservices, we build a set of tiny servers rather creating a monolithic app. These services can be deployed independantly. 
 
-Or you can register for the MeteorHacks Show February and learn more :)
+Cluster is a tool which built for microservices. With cluster you can manage a set of Microservices very easily. Cluster helps for Microservices in many ways:
+
+* Register and Discover Services
+* Discover DDP Connections in both client and server
+* Load Balancing, and Failovers
+
+### A Simple Microservice
+
+Let's say we need to build a our own version of Atmosphere to search packages. So, we decided to build it with Microservices. So, we've two such services:
+
+* search - handles searching
+* web - has the UI
+
+> web is an special kind of service which serves UI component related to the cluster. So, we handle it in a different way. So, keep in mind to define your UI related service as web.
+> 
+> Right now, you can only have one service to serve UI related components. But, you can have many instances of that service.
+
+### Registration
+
+First we need a Mongo URL for the cluster. That's how cluster communicate with each nodes. It's better if you can create a separate MongoDB ReplicaSet for that.
+
+Then we can add following configuration to the search app(service) inside the server.
+
+~~~js
+Cluster.connect("mongodb://mongo-url");
+Cluster.register("search");
+
+// Meteor methods
+Meteor.methods({
+  "searchPackages": function(searchText) {
+    return ["a list of packages"];
+  }
+});
+~~~
+
+Then you can add following configuration to the web app(service).
+
+~~~js
+Cluster.connect("mongodb://mongo-url");
+Cluster.register("web");
+Cluster.allowPublicAccess("search");
+
+var searchConn = Cluster.discoverConnection("search");
+var packagesFromMeteorHacks = searchConn.call("searchPackages", "meteorhacks");
+console.log("here is list of", packagesFromMeteorHacks);
+~~~
+
+You can also connect to the search service from the client side of the web app as well.
+
+~~~js
+var searchConn = Cluster.discoverConnection("search");
+searchConn.call("searchPackages", "meteorhacks", function(err, packages) {
+  if(err) throw err;
+  console.log("here is list of", packages);
+});
+~~~
+
+### Learn More
+
+If you like to learn more, there are a few lessons for Microservices in the BulletProof Meteor.
+
+* [Microservices with Meteor and DDP](https://bulletproofmeteor.com/architecture/microservices-with-meteor-and-ddp)
+* [Microservices - Beyond Basics](https://bulletproofmeteor.com/architecture/microservices-beyond-basics)
+* [Deploying a Highly Available Meteor Cluster](https://bulletproofmeteor.com/architecture/deploying-a-highly-available-meteor-cluster)
+
+You can also watch our talk at the [MeteorHacks Show Feb 2015](http://www.crowdcast.io/e/meteorhacks-show-few-2015)

@@ -11,6 +11,9 @@ test store
 backend registrations
 auto config
 - make cookie reset time to be around 1hour
+- remove the mongo-livedata dependency and use mongodb node driver
+- add the support to query expired entries locally - to handle when the MongoDB goes down
+- verbose mode for logging
 -   so we can assume better distribution
 - do that for WS as well
 - load balance direct WS connections too
