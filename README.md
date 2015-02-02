@@ -4,6 +4,14 @@
 
 With `cluster`, we can scale meteor apps by **just** installing a Meteor package. No need to use tools like **nginx** or **haproxy**. Cluster does more than that, let's discover.
 
+**Table of Contents**
+
+* [Concept](#concept)
+* [Getting Started](#getting-started)
+* [API](#api)
+* [Practical Setup](#practical-setup)
+* [MicroServices](#microservices)
+
 ## Concept
 
 When we need to scale Meteor, it's about scaling DDP requests since Meteor does heavy lifting in DDP. This is how we normally do it. We put a load balancer like ngnix or haproxy in front of Meteor. Then, it'll do the load balancing.
@@ -57,7 +65,7 @@ export CLUSTER_BALANCER_URL=https://subdomain.domainname.com
 
 This URL is open to the public and it should point to this instance. Now make your instances as balancers and your cluster will start to load balance DDP connections through them.
 
-### Practical Setup
+## Practical Setup
 
 Let's see how you could setup Cluster in a practical scenario. [BulletProof Meteor](https://bulletproofmeteor.com/) is already running with Cluster and let me show you the setup. (I've changed some information for the education purpose)
 
@@ -157,7 +165,7 @@ Cluster is a tool which built for microservices. With cluster you can manage a s
 * Discover DDP Connections in both client and server
 * Load Balancing, and Failovers
 
-### A Simple Microservice
+### A Simple app based on Microservices
 
 Let's say we need to build a our own version of Atmosphere to search packages. So, we decided to build it with Microservices. So, we've two such services:
 
@@ -168,7 +176,7 @@ Let's say we need to build a our own version of Atmosphere to search packages. S
 > 
 > Right now, you can only have one service to serve UI related components. But, you can have many instances of that service.
 
-### Registration
+### Service Registration & Discovery
 
 First we need a Mongo URL for the cluster. That's how cluster communicate with each nodes. It's better if you can create a separate MongoDB ReplicaSet for that.
 
