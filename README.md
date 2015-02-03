@@ -1,8 +1,13 @@
-# meteorhacks:cluster
+[![Build Status](https://travis-ci.org/meteorhacks/cluster.svg?branch=master)](https://travis-ci.org/meteorhacks/cluster)
+
+# Cluster 
 
 **Clustering solution for Meteor with load balancing and service discovery.**
 
-With `cluster`, we can scale meteor apps by **just** installing a Meteor package. No need to use tools like **nginx** or **haproxy**. Cluster does more than that, let's discover.
+> **TLDR;**
+> With `cluster`, we can scale meteor apps by **just** installing a Meteor package. No need to use tools like **nginx** or **haproxy**. It's built for Meteor and you don't need to worry configuring IP addresses and so on. Just add more instances and let cluster take care of load balancing.
+
+> Cluster also has the first class support for **MicroServices**.
 
 **Table of Contents**
 
