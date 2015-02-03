@@ -14,6 +14,7 @@
 * [API](#api)
 * [Practical Setup](#practical-setup)
 * [MicroServices](#microservices)
+* [Multiple Balancers](#multiple-balancers)
 
 ## Concept
 
@@ -53,20 +54,6 @@ export CLUSTER_SERVICE=web
 ```
 
 Now start as many as servers you like and DDP traffic will be sent to each instances randomly.
-
-### Multiple Balancers
-
-In the above setup, we've an issue. All the DDP connections are routing through a single instance. That could be the server you've pointed to your domain name via DNS.
-
-But that's not ideal. Cluster has a built in solution for that. That's **balancers**. Balancer is an instance of your cluster which act as a load balancer. You can add or remove them as you needed.
-
-Making your instance a balancer is pretty simple. Just export the following environment variable.
-
-```
-export CLUSTER_BALANCER_URL=https://subdomain.domainname.com
-```
-
-This URL is open to the public and it should point to this instance. Now make your instances as balancers and your cluster will start to load balance DDP connections through them.
 
 ## Practical Setup
 
@@ -228,3 +215,17 @@ If you like to learn more, there are a few lessons for Microservices in the Bull
 * [Deploying a Highly Available Meteor Cluster](https://bulletproofmeteor.com/architecture/deploying-a-highly-available-meteor-cluster)
 
 You can also watch our talk at the [MeteorHacks Show Feb 2015](http://www.crowdcast.io/e/meteorhacks-show-few-2015)
+
+## Multiple Balancers
+
+In the above setup, we've an issue. All the DDP connections are routing through a single instance. That could be the server you've pointed to your domain name via DNS.
+
+But that's not ideal. Cluster has a built in solution for that. That's **balancers**. Balancer is an instance of your cluster which act as a load balancer. You can add or remove them as you needed.
+
+Making your instance a balancer is pretty simple. Just export the following environment variable.
+
+```
+export CLUSTER_BALANCER_URL=https://subdomain.domainname.com
+```
+
+This URL is open to the public and it should point to this instance. Now make your instances as balancers and your cluster will start to load balance DDP connections through them.
