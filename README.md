@@ -100,7 +100,7 @@ export CLUSTER_BALANCER_URL="balancer URL, if this is a balancer" #optional
 export CLUSTER_SERVICE="serviceName"
 
 # Expose services to the public
-export CLUTSER_PUBLIC_SERVICES="service1, service2"
+export CLUSTER_PUBLIC_SERVICES="service1, service2"
 ~~~
 
 ## MicroServices
