@@ -3,7 +3,7 @@
 **Clustering solution for Meteor with load balancing and service discovery.**
 
 > **TLDR;**
-> With `cluster`, we can scale meteor apps by **just** installing a Meteor package. No need to use tools like **nginx** or **haproxy**. It's built for Meteor and you don't need to worry configuring IP addresses and so on. Just add more instances and let cluster take care of load balancing.
+> With `cluster`, we can scale Meteor apps by **just** installing a Meteor package. No need to use tools like **Nginx** or **HaProxy**. It's built for Meteor and you don't need to worry configuring IP addresses and so on. Just add more instances and let cluster take care of load balancing.
 
 > Cluster also has the first class support for **MicroServices**.
 
@@ -12,25 +12,25 @@
 * [Concept](#concept)
 * [Getting Started](#getting-started)
 * [API](#api)
-* [Practical Setup](#practical-setup)
 * [MicroServices](#microservices)
 * [Multiple Balancers](#multiple-balancers)
+* [Practical Setup](#practical-setup)
 
 ## Concept
 
-When we need to scale Meteor, it's about scaling DDP requests since Meteor does heavy lifting in DDP. This is how we normally do it. We put a load balancer like ngnix or haproxy in front of Meteor. Then, it'll do the load balancing.
+When we need to scale Meteor, it's about scaling DDP requests since that's where the traffic flows. When we need to do horizontal scaling, we put a load balancer like Ngnix or HaProxy in front of Meteor. Then, it'll do the load balancing.
 
 Okay, let's say now we need to add another instance? Then we need to reconfigure the load balancer again. That will reset all the existing DDP connections.
 
-Then what if the load balancer goes down? We need to maintain two or more load balancers.
+Then what if the load balancer goes down? To fix that, we need to add load balancer working parentally. That's makes the setup more complex.
 
 ---
 
 Cluster is an interesting way to solve this problem. It makes your Meteor app into a load balancer and you don't need to use a separate tool for that. When you add a new server(or an instance), now you don't need to configure cluster for that. Cluster will simply detect new instances and route traffic to them.
 
-Any of the instance in the cluster can be act as a load balancer. So, even if one server goes down, you don't need to worry much.
+Any of the instance in the cluster can be act as a load balancer. So, even if one server goes down, you don't need to worry much. Also, it's configured specially for Meteor.
 
-Cluster can do these things because, it acts as a service discovery solutions. Currently it has been implemented with MongoDB, but later we can have more implementations.
+Cluster can do these things because, it acts as a service discovery solution. Currently that has been implemented with MongoDB, but later we can have more implementations.
 
 > Since cluster is a service discovery solution, it's perfect for MicroServices. Read to the end :)
 
@@ -53,7 +53,154 @@ export CLUSTER_ENDPOINT_URL=http://ipaddress
 export CLUSTER_SERVICE=web
 ```
 
-Now start as many as servers you like and DDP traffic will be sent to each instances randomly.
+Now start as many as servers you like and DDP traffic will be sent to each instances randomly. You can also remove instances anytime without affecting the cluster or your app.
+
+[Live Demo - How to use cluster to scale your app](http://youtu.be/oudsAQZkvzQ?t=15m27s)
+
+## API
+
+We've a very simple API and there are two version of the API: 
+
+1. JavaScript API
+2. Environment Variables based API
+
+For a production app, it's recommend to use the Environment Variables based API.
+
+### JS API
+
+~~~js
+// Connect to the cluster with a MongoDB URL. Better if it's a replica set
+Cluster.connect("mongodb://mongo-url")
+
+// Register a service to the cluster
+var options = {
+  endpoint: "a direct url to the instance",
+  balancer: "balancer URL, if this is a balancer" // optional
+};
+
+Cluster.register("serviceName", options);
+
+// Expose services to the public
+Cluster.allowPublicAccess(["service1", "service2"]);
+
+// Discover a DDP connection
+// > This is available on the both client and the server
+Cluster.discoverConnection("serviceName");
+~~~
+
+### Environment Variables based API
+
+~~~shell
+# Connect to the cluster with a MongoDB URL. Better if it's a replica set
+export CLUSTER_DISCOVERY_URL=mongodb://mongo-url
+
+# Register a service to the cluster
+export CLUSTER_ENDPOINT_URL="a direct url to the instance"
+export CLUSTER_BALANCER_URL="balancer URL, if this is a balancer" #optional
+export CLUSTER_SERVICE="serviceName"
+
+# Expose services to the public
+export CLUTSER_PUBLIC_SERVICES="service1, service2"
+~~~
+
+## MicroServices
+
+With Microservices, we build apps as a set of tiny services rather creating a monolithic app. These services can be deployed independently. 
+
+Cluster is a tool which built for Microservices. With cluster, you can manage a set of Microservices very easily. Cluster helps for Microservices in many ways:
+
+* Register and Discover Services
+* Discover DDP Connections in both client and server
+* Load Balancing, and Failovers
+
+### A Simple app based on Microservices
+
+Let's say we need to build an our own version of Atmosphere to search packages. So, we decided to build it with Microservices. So, we've two such services:
+
+* search - handles searching
+* web - has the UI
+
+Each of these services is an it's own Meteor app.
+
+> web is an special kind of service which serves UI component related to the cluster. So, we handle it in a different way. So, keep in mind to define your UI related service in the web service.
+> 
+> Right now, you can only have one service to serve UI related components. But, you can have many instances of that service.
+
+### Service Registration & Discovery
+
+First we need a Mongo URL for the cluster. That's how cluster communicate with each nodes. It's better if you can create a separate MongoDB ReplicaSet for that. It doesn't need to have oplog support.
+
+Next, we can add following configuration to the **search** service inside the `server/app.js`.
+
+~~~js
+Cluster.connect("mongodb://mongo-url");
+Cluster.register("search");
+
+// Meteor methods
+Meteor.methods({
+  "searchPackages": function(searchText) {
+    return ["a list of packages"];
+  }
+});
+~~~
+
+Then you can add following configuration to `server/app.js` of the web service.
+
+~~~js
+Cluster.connect("mongodb://mongo-url");
+Cluster.register("web");
+Cluster.allowPublicAccess("search");
+
+var searchConn = Cluster.discoverConnection("search");
+var packagesFromMeteorHacks = searchConn.call("searchPackages", "meteorhacks");
+console.log("here is list of", packagesFromMeteorHacks);
+~~~
+
+In the above, you can see how we can made an connection to the "search" service from the "web" service.
+
+We've also allowed client's to directly connect to the search service from the browser (or from cordova apps). That's has been done with:
+
+~~~js
+Cluster.allowPublicAccess("search");
+~~~
+
+Then you can access "search" service from the client side of "web" service as shown below:
+
+~~~js
+var searchConn = Cluster.discoverConnection("search");
+searchConn.call("searchPackages", "meteorhacks", function(err, packages) {
+  if(err) throw err;
+  console.log("here is list of", packages);
+});
+~~~
+
+### Learn More about Microservices
+
+If you like to learn more, here are few resources for you.
+
+* [Live Demo - Building Microservices with Meteor](http://youtu.be/oudsAQZkvzQ?t=36m54s)
+* [Microservices with Meteor and DDP on BulletProof Meteor](https://bulletproofmeteor.com/architecture/microservices-with-meteor-and-ddp)
+* [Microservices - Beyond Basics on BulletProof Meteor](https://bulletproofmeteor.com/architecture/microservices-beyond-basics)
+* [Deploying a Highly Available Meteor Cluster on BulletProof Meteor](https://bulletproofmeteor.com/architecture/deploying-a-highly-available-meteor-cluster)
+* [Microservices Talk in the MeteorHacks Show Feb 2015](http://youtu.be/oudsAQZkvzQ?t=29m3s)
+
+## Multiple Balancers
+
+In the setup we've discussed in the getting-started section has an issue. All the DDP connections are routing through a single instance. That could be the server you've pointed to your domain name via DNS.
+
+But that's not ideal. If it goes down you can't access to the whole cluster. And also you need to face scaling issues as well since all the traffic route via that single server.
+
+Cluster has a built in solution for that. That's **balancers**. Balancer is an instance of your cluster which act as a load balancer. You can add or remove them as you needed.
+
+Making your instance a balancer is pretty simple. Just export the following environment variable.
+
+```
+export CLUSTER_BALANCER_URL=https://subdomain.domainname.com
+```
+
+This URL is open to the public and it should point to this instance. Now make your instances as balancers and your cluster will start to load balance DDP connections through them.
+
+[Demo & Presentation - Learn more about Balancers](http://youtu.be/oudsAQZkvzQ?t=5m30s)
 
 ## Practical Setup
 
@@ -98,134 +245,3 @@ We use cloudflare for DNS and SSL setup.
 As this setup, `ip-1` and `ip-2` will take care of load balancing for static content while `ip-1`, `ip-2` and `ip-3` is take care of load balancing DDP connections.
 
 All 4 servers process DDP and provide Static Content.
-
-## API
-
-We've a very simple API and there are two version of the API. 
-
-1. Using JavaScript
-2. Using Environment Variables
-
-For a production app, it's recommend to use the Environment Variables.
-
-### JS API
-
-~~~js
-// Connect to the cluster with a MongoDB URL. Better if it's a replica set
-Cluster.connect("mongodb://mongo-url")
-
-// Register a service to the cluster
-var options = {
-  endpoint: "a direct url to the instance",
-  balancer: "balancer URL, if this is a balancer" // optional
-};
-
-Cluster.register("serviceName", options);
-
-// Expose a service to the public
-Cluster.allowPublicAccess(["service1", "service2"]);
-
-// Discover a DDP connection
-// > This is available on the both client and the server
-Cluster.discoverConnection("serviceName");
-~~~
-
-### Environment Variable API
-
-~~~bash
-// Connect to the cluster with a MongoDB URL. Better if it's a replica set
-export CLUSTER_DISCOVERY_URL=mongodb://mongo-url
-
-// Register a service to the cluster
-export CLUSTER_ENDPOINT_URL="a direct url to the instance"
-export CLUSTER_BALANCER_URL="balancer URL, if this is a balancer" #optional
-export CLUSTER_SERVICE="serviceName"
-
-// Expose a service to the public
-export CLUTSER_PUBLIC_SERVICES="service1, service2"
-~~~
-
-## MicroServices
-
-With Microservices, we build a set of tiny servers rather creating a monolithic app. These services can be deployed independantly. 
-
-Cluster is a tool which built for microservices. With cluster you can manage a set of Microservices very easily. Cluster helps for Microservices in many ways:
-
-* Register and Discover Services
-* Discover DDP Connections in both client and server
-* Load Balancing, and Failovers
-
-### A Simple app based on Microservices
-
-Let's say we need to build a our own version of Atmosphere to search packages. So, we decided to build it with Microservices. So, we've two such services:
-
-* search - handles searching
-* web - has the UI
-
-> web is an special kind of service which serves UI component related to the cluster. So, we handle it in a different way. So, keep in mind to define your UI related service as web.
-> 
-> Right now, you can only have one service to serve UI related components. But, you can have many instances of that service.
-
-### Service Registration & Discovery
-
-First we need a Mongo URL for the cluster. That's how cluster communicate with each nodes. It's better if you can create a separate MongoDB ReplicaSet for that.
-
-Then we can add following configuration to the search app(service) inside the server.
-
-~~~js
-Cluster.connect("mongodb://mongo-url");
-Cluster.register("search");
-
-// Meteor methods
-Meteor.methods({
-  "searchPackages": function(searchText) {
-    return ["a list of packages"];
-  }
-});
-~~~
-
-Then you can add following configuration to the web app(service).
-
-~~~js
-Cluster.connect("mongodb://mongo-url");
-Cluster.register("web");
-Cluster.allowPublicAccess("search");
-
-var searchConn = Cluster.discoverConnection("search");
-var packagesFromMeteorHacks = searchConn.call("searchPackages", "meteorhacks");
-console.log("here is list of", packagesFromMeteorHacks);
-~~~
-
-You can also connect to the search service from the client side of the web app as well.
-
-~~~js
-var searchConn = Cluster.discoverConnection("search");
-searchConn.call("searchPackages", "meteorhacks", function(err, packages) {
-  if(err) throw err;
-  console.log("here is list of", packages);
-});
-~~~
-
-### Learn More
-
-If you like to learn more, there are a few lessons for Microservices in the BulletProof Meteor.
-
-* [Microservices with Meteor and DDP](https://bulletproofmeteor.com/architecture/microservices-with-meteor-and-ddp)
-* [Microservices - Beyond Basics](https://bulletproofmeteor.com/architecture/microservices-beyond-basics)
-* [Deploying a Highly Available Meteor Cluster](https://bulletproofmeteor.com/architecture/deploying-a-highly-available-meteor-cluster)
-
-You can also watch our talk at the [MeteorHacks Show Feb 2015](http://www.crowdcast.io/e/meteorhacks-show-few-2015)
-
-## Multiple Balancers
-
-In the above setup, we've an issue. All the DDP connections are routing through a single instance. That could be the server you've pointed to your domain name via DNS.
-
-But that's not ideal. Cluster has a built in solution for that. That's **balancers**. Balancer is an instance of your cluster which act as a load balancer. You can add or remove them as you needed.
-
-Making your instance a balancer is pretty simple. Just export the following environment variable.
-
-```
-export CLUSTER_BALANCER_URL=https://subdomain.domainname.com
-```
-
-This URL is open to the public and it should point to this instance. Now make your instances as balancers and your cluster will start to load balance DDP connections through them.
