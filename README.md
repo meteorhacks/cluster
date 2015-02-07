@@ -158,7 +158,7 @@ console.log("here is list of", packagesFromMeteorHacks);
 
 In the above example, you can see how we made a connection to the "search" service from the "web" service.
 
-We've also allowed clients t. connect directly to the search service from the browser (or from cordova apps). That was done with a single line:
+We've also allowed clients to connect directly to the search service from the browser (or from cordova apps). That was done with a single line:
 
 ~~~js
 Cluster.allowPublicAccess("search");
