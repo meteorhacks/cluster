@@ -239,11 +239,71 @@ Tinytest.add("MongoDiscovery - pickBalancer - exist", function(test) {
   });
 });
 
+Tinytest.add(
+"MongoDiscovery - pickBalancer - given endpoint is a balancer",
+function(test) {
+  WithNewConnection(function() {
+    MongoDiscovery._endpointsColl.insert({
+      balancer: "bUrl", service: "w", endpointHash: "e1"
+    });
+
+    MongoDiscovery._endpointsColl.insert({
+      balancer: "bUrl2", service: "w", endpointHash: "e2"
+    });
+
+    Meteor._sleepForMs(50);
+
+    for(var lc=0; lc<50; lc++) {
+      var endpoint = MongoDiscovery.pickBalancer("e2");
+      test.equal(endpoint, "bUrl2");
+    }
+  });
+});
+
+Tinytest.add(
+"MongoDiscovery - pickBalancer - given endpoint is not a balancer",
+function(test) {
+  WithNewConnection(function() {
+    MongoDiscovery._endpointsColl.insert({
+      balancer: "bUrl", service: "w", endpointHash: "e1"
+    });
+
+    MongoDiscovery._endpointsColl.insert({
+      service: "w", endpointHash: "e2"
+    });
+
+    Meteor._sleepForMs(50);
+
+    for(var lc=0; lc<50; lc++) {
+      var endpoint = MongoDiscovery.pickBalancer("e2");
+      test.equal(endpoint, "bUrl");
+    }
+  });
+});
+
+Tinytest.add(
+"MongoDiscovery - pickBalancer - given endpoint doesn't exist",
+function(test) {
+  WithNewConnection(function() {
+    MongoDiscovery._endpointsColl.insert({
+      balancer: "bUrl", service: "w", endpointHash: "e1"
+    });
+
+    Meteor._sleepForMs(50);
+
+    for(var lc=0; lc<50; lc++) {
+      var endpoint = MongoDiscovery.pickBalancer("e2-notexists");
+      test.equal(endpoint, "bUrl");
+    }
+  });
+});
+
+
 Tinytest.add("MongoDiscovery - pickBalancer - doesn't exist", function(test) {
   WithNewConnection(function() {
     Meteor._sleepForMs(50);
     var endpoint = MongoDiscovery.pickBalancer();
-    test.equal(endpoint, undefined);
+    test.equal(endpoint, null);
   });
 });
 
