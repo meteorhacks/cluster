@@ -123,6 +123,41 @@ function(test) {
   });
 });
 
+Tinytest.add("Balancer - handleHttp - current endpoint",
+function(test) {
+  var balancerUrl = "burl";
+  var endpointHash = "hash";
+  var endpointUrl = "endpoint-url";
+  var service = "web";
+
+  var req = {headers: {}};
+  var res = {};
+
+  var balancerMock = sinon.mock(Balancer);
+  balancerMock.expects('_rewriteDdpUrl').returns({
+    hash: endpointHash,
+    service: service
+  });
+  balancerMock.expects('_pickJustEndpoint')
+    .withArgs(endpointHash, service)
+    .returns(endpointUrl);
+
+  var discovery = {
+    pickBalancer: sinon.stub().returns(undefined)
+  };
+
+  WithDiscovery(discovery, function() {
+    WithCluster({_endpoint: endpointUrl}, function() {
+      var result = Balancer.handleHttp(req, res);
+      test.equal(result, false);
+      Meteor._sleepForMs(50);
+
+      balancerMock.verify();
+      balancerMock.restore();
+    });
+  });
+});
+
 Tinytest.add("Balancer - handleHttp - ddp and no endpoint",
 function(test) {
   var balancerUrl = "burl";
@@ -288,6 +323,35 @@ Tinytest.add("Balancer - handleWs - process okay", function(test) {
     balancerMock.verify();
     balancerMock.restore();
     cookiesProto.get = originalGet;
+  });
+});
+
+Tinytest.add("Balancer - handleWs - current endpoint", function(test) {
+  var endpointUrl = "endpoint-url";
+  var cookiesProto = Npm.require('cookies').prototype;
+  var originalGet = cookiesProto.get;
+
+  cookiesProto.get = sinon.stub();
+  cookiesProto.get.returns("someHash");
+
+  var req = {headers: {}};
+  var socket = {};
+  var head = {};
+
+  var balancerMock = sinon.mock(Balancer);
+  balancerMock.expects('_rewriteDdpUrl').returns(undefined);
+  balancerMock
+    .expects('_pickJustEndpoint').returns(endpointUrl);
+
+  WithDiscovery({}, function() {
+    WithCluster({_endpoint: endpointUrl}, function() {
+      var result = Balancer.handleWs(req, socket, head);
+      test.equal(result, false);
+
+      balancerMock.verify();
+      balancerMock.restore();
+      cookiesProto.get = originalGet;
+    });
   });
 });
 
