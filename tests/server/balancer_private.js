@@ -11,7 +11,7 @@ Tinytest.add("Balancer - _urlToTarget", function(test) {
 
 Tinytest.add("Balancer - _pickAndSetEndpointHash - has endpoint",
 function(test) {
-  var hash = "the-hash";
+  var hash = "the-hreash";
   var discovery = {
     pickEndpointHash: sinon.stub().returns(hash)
   };
@@ -388,6 +388,21 @@ function(test) {
   test.equal(hash, hash);
   test.equal(req.url, "/sockjs" + originalSockJsUrl);
 });
+
+Tinytest.add(
+'Balancer - _rewriteDdpUrl - remove unwanted slashes',
+function(test) {
+  var hash = "somehash56";
+  var originalSockJsUrl = "/sds/998/";
+  var url = format('/cluster-ddp/%s/web///%s///', hash, originalSockJsUrl);
+
+  var req = {url: url};
+  var hash = Balancer._rewriteDdpUrl(req)
+
+  test.equal(hash, hash);
+  test.equal(req.url, "/sockjs" + originalSockJsUrl);
+});
+
 
 Tinytest.add(
 'Balancer - _rewriteDdpUrl - some other urls',
