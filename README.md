@@ -53,7 +53,7 @@ export CLUSTER_ENDPOINT_URL=http://ipaddress
 export CLUSTER_SERVICE=web
 ```
 
-Now start as many as servers as you like and DDP traffic will be sent to each of the instances randomly. You can also remove instances anytime without affecting the cluster or your app.
+Now start as many servers as you like and DDP traffic will be sent to each of the instances randomly. You can also remove instances anytime without affecting the cluster or your app.
 
 [Live Demo - How to use cluster to scale your app](http://youtu.be/oudsAQZkvzQ?t=15m27s)
 
