@@ -19,8 +19,8 @@ Package.onTest(function(api) {
     'tests/server/utils.js',
     'tests/server/discovery_backends/mongo/store.js',
     'tests/server/discovery_backends/mongo/discovery.js',
-    'tests/server/balancer_private.js',
-    'tests/server/balancer_public.js',
+    'tests/server/balancer/utils.js',
+    'tests/server/balancer/route.js',
   ], 'server');
 });
 
@@ -47,7 +47,9 @@ function configurePackage(api) {
     'lib/server/discovery_backends/mongo/store.js',
     'lib/server/discovery_backends/mongo/discovery.js',
     'lib/server/utils.js',
-    'lib/server/balancer.js',
+    'lib/server/balancer/namespace.js',
+    'lib/server/balancer/utils.js',
+    'lib/server/balancer/route.js',
     'lib/server/auto_connect.js'
   ], ['server']);
 
