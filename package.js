@@ -7,7 +7,8 @@ Package.describe({
 
 Npm.depends({
   "cookies": "0.5.0",
-  "http-proxy": "1.8.1"
+  "http-proxy": "1.8.1",
+  "portscanner": "1.0.0"
 });
 
 Package.onTest(function(api) {
@@ -47,6 +48,7 @@ function configurePackage(api) {
     'lib/server/discovery_backends/mongo/store.js',
     'lib/server/discovery_backends/mongo/discovery.js',
     'lib/server/utils.js',
+    'lib/server/worker_pool.js',
     'lib/server/balancer/namespace.js',
     'lib/server/balancer/utils.js',
     'lib/server/balancer/route.js',
