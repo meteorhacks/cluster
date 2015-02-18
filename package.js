@@ -39,7 +39,7 @@ function configurePackage(api) {
 
   api.addFiles([
     'lib/namespace.js',
-    'lib/proxy_connection.js',
+    'lib/connection_watcher.js',
   ], ['server', 'client']);
 
   api.addFiles([
