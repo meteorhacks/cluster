@@ -14,6 +14,7 @@
 * [API](#api)
 * [MicroServices](#microservices)
 * [Multiple Balancers](#multiple-balancers)
+* [UI Service](#ui-service)
 * [Practical Setup](#practical-setup)
 
 ## Concept
@@ -49,7 +50,7 @@ Then when you are deploying or starting your app, export the following environme
 export CLUSTER_DISCOVERY_URL=mongodb://host:port/db,
 # this is the direct URL to your server (it could be a private URL)
 export CLUSTER_ENDPOINT_URL=http://ipaddress
-# mark your server as a web service (this is a must)
+# mark your server as a web service (you can set any name for this)
 export CLUSTER_SERVICE=web
 ```
 
@@ -76,6 +77,7 @@ Cluster.connect("mongodb://mongo-url")
 var options = {
   endpoint: "a direct url to the instance",
   balancer: "balancer URL, if this is a balancer" // optional
+  uiService: "service to proxy UI" // (optional) read to the end for more info
 };
 
 Cluster.register("serviceName", options);
@@ -96,8 +98,10 @@ export CLUSTER_DISCOVERY_URL=mongodb://mongo-url
 
 # Register a service to the cluster
 export CLUSTER_ENDPOINT_URL="a direct url to the instance"
-export CLUSTER_BALANCER_URL="balancer URL, if this is a balancer" #optional
 export CLUSTER_SERVICE="serviceName"
+
+export CLUSTER_BALANCER_URL="balancer URL, if this is a balancer" #optional
+export CLUSTER_UI_SERVICE="ui-service-name" #optional - read to the end for more info
 
 # Expose services to the public
 export CLUSTER_PUBLIC_SERVICES="service1, service2"
@@ -121,10 +125,6 @@ For example, if we want to build our own version of Atmosphere to search Meteor 
 * web - has the UI
 
 Each of these services is it's own Meteor app.
-
-> web is a special kind of service which serves UI components related to the cluster. So, we handle it in a different way. Keep in mind that you will have to define your UI related service within the web service.
-> 
-> Right now, you can only have one service to serve UI related components. But, you can have many instances of that service.
 
 ### Service Registration & Discovery
 
@@ -201,6 +201,21 @@ export CLUSTER_BALANCER_URL=https://subdomain.domainname.com
 This URL is open to public and it should point to this instance. Now configure your instances to run as Balancers and your cluster will start to load balance DDP connections through them.
 
 [Demo & Presentation - Learn more about Balancers](http://youtu.be/oudsAQZkvzQ?t=5m30s)
+
+## UI Service
+
+In cluster, there is a special concept called "UI Service". By default, if you visit a service, it's UI will be served to you. For an example, let's say we've two services:
+
+* web - the user inteface of our app (on port 7000)
+* search - the service which expose a search API (on port 8000)
+
+So, if you visit the web app on port 7000, you'll get the UI of the web app. If you visit the search app on port 8000, you'll get the UI of the search app.
+
+But it's possible, search apps to give the UI of the "web" app as well. With that we can make sure, all the services in the cluster exposes the same UI. For that, simply expose following environment variable.
+
+~~~shell
+export CLUSTER_UI_SERVICE="web"
+~~~
 
 ## Practical Setup
 

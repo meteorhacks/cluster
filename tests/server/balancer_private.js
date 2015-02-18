@@ -16,13 +16,17 @@ function(test) {
     pickEndpointHash: sinon.stub().returns(hash)
   };
 
-  WithDiscovery(discovery, function() {
-    var cookies = {set: sinon.spy()};
-    var result = Balancer._pickAndSetEndpointHash(cookies);
+  var uiService = "web";
+  WithCluster({_uiService: uiService}, function() {
+    WithDiscovery(discovery, function() {
+      var cookies = {set: sinon.spy()};
+      var result = Balancer._pickAndSetEndpointHash(cookies);
 
-    test.equal(result, hash);
-    test.isTrue(cookies.set.calledWith("cluster-endpoint", hash));
-    test.isTrue(discovery.pickEndpointHash.calledWith("web"));
+      var cookieName = Balancer._buildCookie('cluster-endpoint', uiService)
+      test.equal(result, hash);
+      test.isTrue(cookies.set.calledWith(cookieName, hash));
+      test.isTrue(discovery.pickEndpointHash.calledWith(uiService));
+    });
   });
 });
 
@@ -32,6 +36,18 @@ function(test) {
   var discovery = {
     pickEndpointHash: sinon.stub().returns(null)
   };
+
+  var uiService = "web";
+  WithCluster({_uiService: uiService}, function() {
+    WithDiscovery(discovery, function() {
+      var cookies = {set: sinon.spy()};
+    var result = Balancer._pickAndSetEndpointHash(cookies);
+
+    test.equal(result, false);
+    test.isFalse(cookies.set.called);
+    test.isTrue(discovery.pickEndpointHash.calledWith(uiService));
+    });
+  });
 
   WithDiscovery(discovery, function() {
     var cookies = {set: sinon.spy()};
@@ -139,14 +155,19 @@ Tinytest.add(
 "Balancer - _pickJustEndpoint - no hash provided",
 function(test) {
   var endpoint = "end-point";
+  var uiService = "web";
+
   var discovery = {
-    pickEndpoint: sinon.stub().returns(endpoint)
+    pickEndpoint: sinon.stub()
+      .returns(endpoint)
   }
 
-  WithDiscovery(discovery, function() {
-    var result = Balancer._pickJustEndpoint();
-    test.equal(result, endpoint);
-    test.isTrue(discovery.pickEndpoint.calledWith("web"));
+  WithCluster({_uiService: uiService}, function() {
+    WithDiscovery(discovery, function() {
+      var result = Balancer._pickJustEndpoint(null, uiService);
+      test.equal(result, endpoint);
+      test.isTrue(discovery.pickEndpoint.calledWith(uiService));
+    });
   });
 });
 
@@ -155,12 +176,13 @@ Tinytest.add(
 function(test) {
   var endpoint = "end-point";
   var hash = "the-hash";
+  var uiService = "web";
   var discovery = {
     hashToEndpoint: sinon.stub().returns(endpoint)
   }
 
   WithDiscovery(discovery, function() {
-    var result = Balancer._pickJustEndpoint(hash);
+    var result = Balancer._pickJustEndpoint(hash, uiService);
     test.equal(result, endpoint);
     test.isTrue(discovery.hashToEndpoint.calledWith(hash));
   });
@@ -171,17 +193,20 @@ Tinytest.add(
 function(test) {
   var endpoint = "end-point";
   var hash = "the-hash";
+  var uiService = "web";
   var discovery = {
     hashToEndpoint: sinon.stub().returns(false),
     pickEndpoint: sinon.stub().returns(endpoint)
   }
 
-  WithDiscovery(discovery, function() {
-    var result = Balancer._pickJustEndpoint(hash);
-    test.equal(result, endpoint);
+  WithCluster({_uiService: uiService}, function() {
+    WithDiscovery(discovery, function() {
+      var result = Balancer._pickJustEndpoint(hash, uiService);
+      test.equal(result, endpoint);
 
-    test.isTrue(discovery.hashToEndpoint.calledWith(hash));
-    test.isTrue(discovery.pickEndpoint.calledWith("web"));
+      test.isTrue(discovery.hashToEndpoint.calledWith(hash));
+      test.isTrue(discovery.pickEndpoint.calledWith(uiService));
+    });
   });
 });
 
@@ -420,6 +445,7 @@ function(test) {
   var balancer = "http://balancer.com";
   var endpoint = "epoint";
   var hash = "hashhh";
+  var uiService = "web";
   var discovery = {
     endpointToHash: sinon.stub().returns(hash),
     pickBalancer: sinon.stub().returns(balancer),
@@ -437,16 +463,18 @@ function(test) {
   var req = {url: "/web/sockjs/info"};
   var res = {writeHead: sinon.stub(), end: sinon.stub()};
 
-  WithDiscovery(discovery, function() {
-    Balancer._sendSockJsInfo(req, res, cookies);
+  WithCluster({_uiService: uiService}, function() {
+    WithDiscovery(discovery, function() {
+      Balancer._sendSockJsInfo(req, res, cookies);
 
-    test.isTrue(discovery.endpointToHash.calledWith(endpoint));
-    var info = JSON.parse(res.end.firstCall.args[0]);
-    test.equal(info.base_url, format("%s/cluster-ddp/%s/web", balancer, hash));
-    test.equal(info.websocket, true);
+      test.isTrue(discovery.endpointToHash.calledWith(endpoint));
+      var info = JSON.parse(res.end.firstCall.args[0]);
+      test.equal(info.base_url, format("%s/cluster-ddp/%s/web", balancer, hash));
+      test.equal(info.websocket, true);
 
-    balancerMock.verify();
-    balancerMock.restore();
+      balancerMock.verify();
+      balancerMock.restore();
+    });
   });
 });
 
@@ -456,6 +484,7 @@ function(test) {
   var balancer = null;
   var endpoint = "epoint";
   var hash = "hashhh";
+  var uiService = "web";
   var discovery = {
     endpointToHash: sinon.stub().returns(hash),
     pickBalancer: sinon.stub().returns(balancer),
@@ -473,16 +502,18 @@ function(test) {
   var req = {url: "/web/sockjs/info"};
   var res = {writeHead: sinon.stub(), end: sinon.stub()};
 
-  WithDiscovery(discovery, function() {
-    Balancer._sendSockJsInfo(req, res, cookies);
+  WithCluster({_uiService: uiService}, function() {
+    WithDiscovery(discovery, function() {
+      Balancer._sendSockJsInfo(req, res, cookies);
 
-    test.isTrue(discovery.endpointToHash.calledWith(endpoint));
-    var info = JSON.parse(res.end.firstCall.args[0]);
-    test.equal(info.base_url, format("/cluster-ddp/%s/web", hash));
-    test.equal(info.websocket, true);
+      test.isTrue(discovery.endpointToHash.calledWith(endpoint));
+      var info = JSON.parse(res.end.firstCall.args[0]);
+      test.equal(info.base_url, format("/cluster-ddp/%s/web", hash));
+      test.equal(info.websocket, true);
 
-    balancerMock.verify();
-    balancerMock.restore();
+      balancerMock.verify();
+      balancerMock.restore();
+    });
   });
 });
 
@@ -557,6 +588,7 @@ function(test) {
   var balancer = "http://balancer.com";
   var endpoint = "epoint";
   var hash = "hashhh";
+  var uiService = "web";
   var discovery = {
     endpointToHash: sinon.stub().returns(hash),
     pickBalancer: sinon.stub().returns(balancer),
@@ -574,21 +606,23 @@ function(test) {
   var req = {url: "/web/sockjs/info"};
   var res = {writeHead: sinon.stub(), end: sinon.stub()};
 
-  WithDiscovery(discovery, function() {
-    var originalEnv = process.env;
-    process.env['DISABLE_WEBSOCKETS'] = "1";
+  WithCluster({_uiService: uiService}, function() {
+    WithDiscovery(discovery, function() {
+      var originalEnv = process.env;
+      process.env['DISABLE_WEBSOCKETS'] = "1";
 
-    Balancer._sendSockJsInfo(req, res, cookies);
+      Balancer._sendSockJsInfo(req, res, cookies);
 
-    delete process.env['DISABLE_WEBSOCKETS'];
+      delete process.env['DISABLE_WEBSOCKETS'];
 
-    test.isTrue(discovery.endpointToHash.calledWith(endpoint));
-    var info = JSON.parse(res.end.firstCall.args[0]);
-    test.equal(info.base_url, format("%s/cluster-ddp/%s/web", balancer, hash));
-    test.equal(info.websocket, false);
+      test.isTrue(discovery.endpointToHash.calledWith(endpoint));
+      var info = JSON.parse(res.end.firstCall.args[0]);
+      test.equal(info.base_url, format("%s/cluster-ddp/%s/web", balancer, hash));
+      test.equal(info.websocket, false);
 
-    balancerMock.verify();
-    balancerMock.restore();
+      balancerMock.verify();
+      balancerMock.restore();
+    });
   });
 });
 
