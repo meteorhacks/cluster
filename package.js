@@ -1,6 +1,6 @@
 Package.describe({
   "summary": "Clustering solution for Meteor with load balancing and service discovery.",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "git": "https://github.com/meteorhacks/cluster.git",
   "name": "meteorhacks:cluster"
 });
@@ -33,7 +33,7 @@ function configurePackage(api) {
   api.versionsFrom('METEOR@0.9.2');
   api.use(['webapp'], 'server');
   api.use([
-    'mongo-livedata', 'tracker', 'ddp', 'minimongo',
+    'mongo', 'tracker', 'ddp', 'minimongo',
     'underscore'
   ], ['server', 'client']);
 
