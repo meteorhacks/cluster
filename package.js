@@ -18,6 +18,7 @@ Package.onTest(function(api) {
 
   api.addFiles([
     'tests/server/utils.js',
+    'tests/server/worker_pool.js',
     'tests/server/discovery_backends/mongo/store.js',
     'tests/server/discovery_backends/mongo/discovery.js',
     'tests/server/balancer/utils.js',
