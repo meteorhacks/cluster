@@ -23,6 +23,7 @@ Package.onTest(function(api) {
     'tests/server/discovery_backends/mongo/discovery.js',
     'tests/server/balancer/utils.js',
     'tests/server/balancer/route.js',
+    'tests/server/balancer/workers.js',
   ], 'server');
 });
 
