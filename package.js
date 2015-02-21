@@ -52,6 +52,7 @@ function configurePackage(api) {
     'lib/server/worker_pool.js',
     'lib/server/balancer/namespace.js',
     'lib/server/balancer/utils.js',
+    'lib/server/balancer/workers.js',
     'lib/server/balancer/route.js',
     'lib/server/auto_connect.js'
   ], ['server']);
