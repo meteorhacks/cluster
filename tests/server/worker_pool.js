@@ -173,3 +173,38 @@ Tinytest.add(
   worker.process.emit('exit');
   test.isTrue(wp._createWorker.called)
 });
+
+Tinytest.add(
+"WorkerPool - _getReconnectTimeout, first reconnect", function(test) {
+  var wp = new WorkerPool(0);
+  var reconnectTime = wp._getReconnectTimeout();
+  test.equal(reconnectTime, 0);
+});
+
+Tinytest.add(
+"WorkerPool - _getReconnectTimeout, concecutive reconnects", function(test) {
+  var wp = new WorkerPool(0);
+  var reconnectTime1 = wp._getReconnectTimeout();
+  var reconnectTime2 = wp._getReconnectTimeout();
+  var reconnectTime3 = wp._getReconnectTimeout();
+
+  test.equal(reconnectTime1, 0);
+  test.equal(reconnectTime2, 500);
+  test.equal(reconnectTime3, 1000);
+});
+
+Tinytest.add(
+"WorkerPool - _getReconnectTimeout, reconnects after time big time gap",
+function(test) {
+  var wp = new WorkerPool(0);
+  wp._recentReconnects = 100;
+  // less than 60 secs ago
+  wp._lastReconnectAt = Date.now() - (1000 * 50);
+  var reconnectTime = wp._getReconnectTimeout();
+  test.isTrue(reconnectTime >= wp._recentReconnects);
+
+  // before 60 secs
+  wp._lastReconnectAt = Date.now() - (1000 * 61);
+  reconnectTime = wp._getReconnectTimeout();
+  test.equal(reconnectTime, 0);
+});
