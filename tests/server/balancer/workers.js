@@ -60,20 +60,23 @@ function(test) {
 
 Tinytest.add("Balancer - _processHereWS - have a worker",
 function(test) {
-  var worker = {port: "8930"};
+  var send = sinon.stub();
+  var worker = {port: "8930", process: {send: send}};
   var pickWorker = sinon.stub().returns(worker);
-  var ws = sinon.stub();
 
   WithNew(Balancer, {_pickWorker: pickWorker}, function() {
-    WithNew(Balancer.proxy, {ws: ws}, function() {
-      var req = {r: 1}, socket = {s: 1}, head = {h: 1};
-      var options = {target: {host: "127.0.0.1", port: worker.port}};
-      var result = Balancer._processHereWS(req, socket, head);
+    var req = {url: "/"}, socket = {s: 1}, head = new Buffer("abc");
+    var options = {target: {host: "127.0.0.1", port: worker.port}};
+    var result = Balancer._processHereWS(req, socket, head);
 
-      test.equal(result, true);
-      test.isTrue(pickWorker.called);
-      test.isTrue(ws.calledWith(req, socket, head, options));
-    });
+    test.equal(result, true);
+    test.isTrue(pickWorker.called);
+    var message = {
+      type: "proxy-ws",
+      req: req,
+      head: head.toString("utf8")
+    };
+    test.isTrue(send.calledWith(message, socket));
   });
 });
 
