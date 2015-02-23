@@ -12,6 +12,7 @@
 * [Concept](#concept)
 * [Getting Started](#getting-started)
 * [API](#api)
+* [Multi-Core Support](#multi-core-support)
 * [MicroServices](#microservices)
 * [Multiple Balancers](#multiple-balancers)
 * [UI Service](#ui-service)
@@ -106,6 +107,28 @@ export CLUSTER_UI_SERVICE="ui-service-name" #optional - read to the end for more
 # Expose services to the public
 export CLUSTER_PUBLIC_SERVICES="service1, service2"
 ~~~
+
+## Multi-Core Support
+
+Cluster has the multi-core support as well. You can run your Meteor app utilizing all the cores in your server as follows:
+
+Make sure you've added the `meteorhacks:cluster` package.
+
+Then expose following environment variable:
+
+~~~shell
+export CLUSTER_WORKERS_COUNT=auto
+~~~
+
+That’s all you have to do. Now your Meteor app will use all the cores available on your server.
+
+You can also specify the number of workers explicitly like this:
+
+~~~shell
+export CLUSTER_WORKERS_COUNT=2
+~~~
+
+For more information follow this [article](https://meteorhacks.com/introducing-multi-core-support-for-meteor.html).
 
 ## MicroServices
 
