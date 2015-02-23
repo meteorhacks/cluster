@@ -7,7 +7,8 @@ Package.describe({
 
 Npm.depends({
   "cookies": "0.5.0",
-  "http-proxy": "1.8.1"
+  "http-proxy": "1.8.1",
+  "portscanner": "1.0.0"
 });
 
 Package.onTest(function(api) {
@@ -17,10 +18,12 @@ Package.onTest(function(api) {
 
   api.addFiles([
     'tests/server/utils.js',
+    'tests/server/worker_pool.js',
     'tests/server/discovery_backends/mongo/store.js',
     'tests/server/discovery_backends/mongo/discovery.js',
-    'tests/server/balancer_private.js',
-    'tests/server/balancer_public.js',
+    'tests/server/balancer/utils.js',
+    'tests/server/balancer/route.js',
+    'tests/server/balancer/workers.js',
   ], 'server');
 });
 
@@ -47,7 +50,11 @@ function configurePackage(api) {
     'lib/server/discovery_backends/mongo/store.js',
     'lib/server/discovery_backends/mongo/discovery.js',
     'lib/server/utils.js',
-    'lib/server/balancer.js',
+    'lib/server/worker_pool.js',
+    'lib/server/balancer/namespace.js',
+    'lib/server/balancer/utils.js',
+    'lib/server/balancer/workers.js',
+    'lib/server/balancer/route.js',
     'lib/server/auto_connect.js'
   ], ['server']);
 

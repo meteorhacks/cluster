@@ -1,3 +1,8 @@
+var originalProcessHereHTTP = Balancer._processHereHTTP;
+var originalProcessHereWs = Balancer._processHereWS;
+
+Tinytest.add("Balancer - handleHttp - setup", setup);
+
 Tinytest.add("Balancer - handleHttp - no discovery", function(test) {
   WithDiscovery(null, function() {
     var result = Balancer.handleHttp();
@@ -227,6 +232,9 @@ function(test) {
   });
 });
 
+Tinytest.add("Balancer - handleHttp - teardown", teardown);
+Tinytest.add("Balancer - handleWs - setup", setup);
+
 Tinytest.add("Balancer - handleWs - no discovery", function(test) {
   WithDiscovery(null, function() {
     var result = Balancer.handleWs();
@@ -389,3 +397,15 @@ function(test) {
     balancerMock.restore();
   });
 });
+
+Tinytest.add("Balancer - handleWs - teardown", teardown);
+
+function teardown() {
+  Balancer._processHereHTTP = originalProcessHereHTTP;
+  Balancer._processHereWS = originalProcessHereWs;
+}
+
+function setup() {
+  Balancer._processHereHTTP = function() {return false};
+  Balancer._processHereWS = function() {return false};
+}
