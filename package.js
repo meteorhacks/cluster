@@ -1,6 +1,6 @@
 Package.describe({
   "summary": "Clustering solution for Meteor with load balancing and service discovery.",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "git": "https://github.com/meteorhacks/cluster.git",
   "name": "meteorhacks:cluster"
 });
