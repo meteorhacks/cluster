@@ -130,6 +130,8 @@ export CLUSTER_WORKERS_COUNT=2
 
 For more information follow this [article](https://meteorhacks.com/introducing-multi-core-support-for-meteor.html).
 
+> If you are using Meteor Up to deploy your app, make sure you've the latest version.
+
 ## MicroServices
 
 With Microservices, we build apps as a set of tiny services rather than create a monolithic app. These services can be deployed independently. 
