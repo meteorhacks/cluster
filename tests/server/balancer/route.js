@@ -10,6 +10,14 @@ Tinytest.add("Balancer - handleHttp - no discovery", function(test) {
   });
 });
 
+Tinytest.add("Balancer - handleHttp - inside a worker", function(test) {
+  var newEnv = {CLUSTER_WORKER_ID: "10"};
+  WithNew(process.env, WithNew, function() {
+    var result = Balancer.handleHttp();
+    test.equal(result, false);
+  });
+});
+
 Tinytest.add("Balancer - handleHttp - from balancer header", function(test) {
   WithDiscovery({}, function() {
     var req = {
@@ -237,6 +245,14 @@ Tinytest.add("Balancer - handleWs - setup", setup);
 
 Tinytest.add("Balancer - handleWs - no discovery", function(test) {
   WithDiscovery(null, function() {
+    var result = Balancer.handleWs();
+    test.equal(result, false);
+  });
+});
+
+Tinytest.add("Balancer - handleWs - inside a worker", function(test) {
+  var newEnv = {CLUSTER_WORKER_ID: "22323"};
+  WithNew(process.env, newEnv, function() {
     var result = Balancer.handleWs();
     test.equal(result, false);
   });
