@@ -1,7 +1,8 @@
 Tinytest.add("MongoDiscovery - connect", function(test) {
   WithNewConnection(function() {
-    var count = MongoDiscovery._endpointsColl.find().count();
-    test.equal(count, 0);
+    var cursor = MongoDiscovery._endpointsColl.find();
+    var size = Meteor.wrapAsync(cursor.count, cursor)();
+    test.equal(size, 0);
   });
 });
 
@@ -158,6 +159,7 @@ function(test) {
       pingInterval: 50
     });
     Meteor._sleepForMs(60);
+
     var doc = MongoDiscovery._endpointsColl.findOne();
     var lastTimestamp = doc.timestamp.getTime();
 

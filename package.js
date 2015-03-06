@@ -8,7 +8,8 @@ Package.describe({
 Npm.depends({
   "cookies": "0.5.0",
   "http-proxy": "1.8.1",
-  "portscanner": "1.0.0"
+  "portscanner": "1.0.0",
+  "mongodb": "1.4.33"
 });
 
 Package.onTest(function(api) {
@@ -37,8 +38,7 @@ function configurePackage(api) {
   api.versionsFrom('METEOR@0.9.2');
   api.use(['webapp'], 'server');
   api.use([
-    'mongo', 'tracker', 'ddp', 'minimongo',
-    'underscore'
+    'ddp', 'underscore'
   ], ['server', 'client']);
 
   api.addFiles([
