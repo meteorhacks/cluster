@@ -13,45 +13,51 @@ Tinytest.add("MongoDiscovery - hashing", function(test) {
 Tinytest.add("MongoDiscovery - observeAndStore - add", function(test) {
   var store = new MongoDiscoveryStore();
   var coll = new Mongo.Collection(Random.id());
-  var doc = {_id: "aa", bb: 20};
+  var doc = createNewService("aa");
 
-  var handler = MongoDiscovery._observerAndStore(coll.find(), store);
-  coll.insert(doc);
-  Meteor._sleepForMs(50);
-  test.equal(store.get("aa"), doc);
-  handler.stop();
+  WithNew(MongoDiscovery, {_dataFetchInterval: 10}, function() {
+    var handler = MongoDiscovery._observerAndStore(coll.find(), store);
+    coll.insert(doc);
+    Meteor._sleepForMs(50);
+    test.equal(store.get("aa"), doc);
+    handler.stop();
+  });
 });
 
 Tinytest.add("MongoDiscovery - observeAndStore - remove", function(test) {
-  var store = new MongoDiscoveryStore();
+  var store = new MongoDiscoveryStore(null, {dataFetchInterval: 10});
   var coll = new Mongo.Collection(Random.id());
-  var doc = {_id: "aa", bb: 20};
+  var doc = createNewService("aa");
 
-  var handler = MongoDiscovery._observerAndStore(coll.find(), store);
-  coll.insert(doc);
-  Meteor._sleepForMs(50);
-  test.equal(store.get("aa"), doc);
+  WithNew(MongoDiscovery, {_dataFetchInterval: 10}, function() {
+    var handler = MongoDiscovery._observerAndStore(coll.find(), store);
+    coll.insert(doc);
+    Meteor._sleepForMs(50);
+    test.equal(store.get("aa"), doc);
 
-  coll.remove("aa")
-  Meteor._sleepForMs(50);
-  test.equal(store.get("aa"), undefined);
-  handler.stop();
+    coll.remove("aa")
+    Meteor._sleepForMs(50);
+    test.equal(store.get("aa"), undefined);
+    handler.stop();
+  });
 });
 
 Tinytest.add("MongoDiscovery - observeAndStore - changed", function(test) {
   var store = new MongoDiscoveryStore();
   var coll = new Mongo.Collection(Random.id());
-  var doc = {_id: "aa", bb: 20};
+  var doc = createNewService("aa");
 
-  var handler = MongoDiscovery._observerAndStore(coll.find(), store);
-  coll.insert(doc);
-  Meteor._sleepForMs(50);
-  test.equal(store.get("aa"), doc);
+  WithNew(MongoDiscovery, {_dataFetchInterval: 10}, function() {
+    var handler = MongoDiscovery._observerAndStore(coll.find(), store);
+    coll.insert(doc);
+    Meteor._sleepForMs(50);
+    test.equal(store.get("aa"), doc);
 
-  coll.update("aa", {$set: {bb: 50}})
-  Meteor._sleepForMs(50);
-  test.equal(store.get("aa").bb, 50);
-  handler.stop();
+    coll.update("aa", {$set: {bb: 50}})
+    Meteor._sleepForMs(50);
+    test.equal(store.get("aa").bb, 50);
+    handler.stop();
+  });
 });
 
 Tinytest.add("MongoDiscovery - ping - with no options", function(test) {
@@ -166,7 +172,8 @@ function(test) {
 
 Tinytest.add("MongoDiscovery - pickEndpoint - exist", function(test) {
   WithNewConnection(function() {
-    MongoDiscovery._endpointsColl.insert({endpoint: "ep", serviceName: "s"});
+    var service = createNewService(Random.id(), {endpoint: "ep", serviceName: "s"})
+    MongoDiscovery._endpointsColl.insert(service);
     Meteor._sleepForMs(50);
     var endpoint = MongoDiscovery.pickEndpoint("s");
     test.equal(endpoint, "ep");
@@ -183,9 +190,10 @@ Tinytest.add("MongoDiscovery - pickEndpoint - doesn't exist", function(test) {
 
 Tinytest.add("MongoDiscovery - pickEndpointHash - exist", function(test) {
   WithNewConnection(function() {
-    MongoDiscovery._endpointsColl.insert({
+    var service = createNewService(Random.id(), {
       endpointHash: "hash", serviceName: "s"
     });
+    MongoDiscovery._endpointsColl.insert(service);
     Meteor._sleepForMs(50);
     var hash = MongoDiscovery.pickEndpointHash("s");
     test.equal(hash, "hash");
@@ -207,11 +215,12 @@ function(test) {
 
 Tinytest.add("MongoDiscovery - hashToEndpoint - exist", function(test) {
   WithNewConnection(function() {
-    MongoDiscovery._endpointsColl.insert({
+    var service = createNewService(Random.id(), {
       endpoint: "ep",
       endpointHash: "hash",
       serviceName: "s"
     });
+    MongoDiscovery._endpointsColl.insert(service);
 
     Meteor._sleepForMs(50);
     var hash = MongoDiscovery.pickEndpointHash("s");
@@ -232,7 +241,10 @@ Tinytest.add("MongoDiscovery - hashToEndpoint - doesn't exist", function(test) {
 
 Tinytest.add("MongoDiscovery - pickBalancer - exist", function(test) {
   WithNewConnection(function() {
-    MongoDiscovery._endpointsColl.insert({balancer: "bUrl", service: "w"});
+    var service = createNewService(Random.id(), {
+      balancer: "bUrl", service: "w"
+    });
+    MongoDiscovery._endpointsColl.insert(service);
     Meteor._sleepForMs(50);
     var endpoint = MongoDiscovery.pickBalancer();
     test.equal(endpoint, "bUrl");
@@ -243,13 +255,15 @@ Tinytest.add(
 "MongoDiscovery - pickBalancer - given endpoint is a balancer",
 function(test) {
   WithNewConnection(function() {
-    MongoDiscovery._endpointsColl.insert({
+    var service = createNewService(Random.id(), {
       balancer: "bUrl", service: "w", endpointHash: "e1"
     });
+    MongoDiscovery._endpointsColl.insert(service);
 
-    MongoDiscovery._endpointsColl.insert({
+    var service2 = createNewService(Random.id(), {
       balancer: "bUrl2", service: "w", endpointHash: "e2"
     });
+    MongoDiscovery._endpointsColl.insert(service2);
 
     Meteor._sleepForMs(50);
 
@@ -264,13 +278,15 @@ Tinytest.add(
 "MongoDiscovery - pickBalancer - given endpoint is not a balancer",
 function(test) {
   WithNewConnection(function() {
-    MongoDiscovery._endpointsColl.insert({
+    var service = createNewService(Random.id(), {
       balancer: "bUrl", service: "w", endpointHash: "e1"
     });
+    MongoDiscovery._endpointsColl.insert(service);
 
-    MongoDiscovery._endpointsColl.insert({
+    var service2 = createNewService(Random.id(), {
       service: "w", endpointHash: "e2"
     });
+    MongoDiscovery._endpointsColl.insert(service2);
 
     Meteor._sleepForMs(50);
 
@@ -285,9 +301,10 @@ Tinytest.add(
 "MongoDiscovery - pickBalancer - given endpoint doesn't exist",
 function(test) {
   WithNewConnection(function() {
-    MongoDiscovery._endpointsColl.insert({
+    var service = createNewService(Random.id(), {
       balancer: "bUrl", service: "w", endpointHash: "e1"
     });
+    MongoDiscovery._endpointsColl.insert(service);
 
     Meteor._sleepForMs(50);
 
@@ -297,7 +314,6 @@ function(test) {
     }
   });
 });
-
 
 Tinytest.add("MongoDiscovery - pickBalancer - doesn't exist", function(test) {
   WithNewConnection(function() {
@@ -309,8 +325,21 @@ Tinytest.add("MongoDiscovery - pickBalancer - doesn't exist", function(test) {
 
 function WithNewConnection(fn) {
   MongoDiscovery.connect(process.env.MONGO_URL, {
-    collName: Random.id()
+    collName: Random.id(),
+    dataFetchInterval: 10
   });
   fn();
   MongoDiscovery.disconnect();
+}
+
+function createNewService(id, additional) {
+  additional = additional || {};
+  var service = {
+    _id: id,
+    timestamp: new Date(),
+    pingInterval: 1000 * 10,
+  };
+
+  service = _.extend(service, additional);
+  return service;
 }
