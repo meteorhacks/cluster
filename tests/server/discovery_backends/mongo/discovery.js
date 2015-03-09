@@ -172,6 +172,44 @@ function(test) {
   });
 });
 
+Tinytest.add("MongoDiscovery - _getEndpoint - without _selfWeight", function(test) {
+  WithNewConnection(function() {
+    var service = createNewService(Random.id(), {endpoint: "ep", serviceName: "s"})
+    MongoDiscovery._endpointsColl.insert(service);
+    Meteor._sleepForMs(50);
+    var service = MongoDiscovery._getEndpoint("s");
+    test.equal(service.endpoint, "ep");
+  });
+});
+
+Tinytest.add("MongoDiscovery - _getEndpoint - with _selfWeight", function(test) {
+  WithNewConnection(function() {
+    WithNew(MongoDiscovery, {_selfWeight: 0}, function() {
+      WithNew(Cluster, {_endpoint: "ep"}, function() {
+        var service = createNewService(Random.id(), {
+          endpoint: "ep",
+          endpointHash: MongoDiscovery._hash("ep"),
+          serviceName: "s"
+        });
+        MongoDiscovery._endpointsColl.insert(service);
+
+       var service2 = createNewService(Random.id(), {
+          endpoint: "ep2",
+          endpointHash: MongoDiscovery._hash("ep2"),
+          serviceName: "s"
+        });
+        MongoDiscovery._endpointsColl.insert(service2);
+
+        Meteor._sleepForMs(50);
+        for(var lc=0; lc<100; lc++) {
+          var service = MongoDiscovery._getEndpoint("s");
+          test.equal(service.endpoint, "ep2");
+        }
+      });
+    });
+  });
+});
+
 Tinytest.add("MongoDiscovery - pickEndpoint - exist", function(test) {
   WithNewConnection(function() {
     var service = createNewService(Random.id(), {endpoint: "ep", serviceName: "s"})
@@ -326,7 +364,7 @@ Tinytest.add("MongoDiscovery - pickBalancer - doesn't exist", function(test) {
 });
 
 function WithNewConnection(fn) {
-  MongoDiscovery.connect(process.env.MONGO_URL, {
+  MongoDiscovery.connect(process.env.MONGO_URL, Cluster, {
     collName: Random.id(),
     dataFetchInterval: 10
   });

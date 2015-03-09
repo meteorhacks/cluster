@@ -72,7 +72,15 @@ For a production app, it's recommended to use the Environment Variables based AP
 
 ~~~js
 // Connect to the cluster with a MongoDB URL. Better if it's a replica set
-Cluster.connect("mongodb://mongo-url")
+var connectOptions = {
+  // Value of 0 to 1, mentioning which port of requestes to process here or proxy
+  // If 1, all the requests allocated to this host will get processed
+  // If 0.5 half of the requsted allocated to this host will get processed, others will get proxied
+  // If 0, only do proxying 
+  selfWeight: 1 // optional
+};
+
+Cluster.connect("mongodb://mongo-url", connectOptions)
 
 // Register a service to the cluster
 var options = {
@@ -106,6 +114,9 @@ export CLUSTER_UI_SERVICE="ui-service-name" #optional - read to the end for more
 
 # Expose services to the public
 export CLUSTER_PUBLIC_SERVICES="service1, service2"
+
+# Check JS API's connectOptions.selfWeight for docs
+export CLUSTER_SELF_WEIGHT="0.6"
 ~~~
 
 ## Multi-Core Support

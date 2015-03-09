@@ -72,7 +72,6 @@ Tinytest.add("MongoDiscoveryStore - set and remove byBalancer", function(test) {
   test.equal(store.byBalancer("burl"), undefined);
 });
 
-
 Tinytest.add("MongoDiscoveryStore - set and getRandom", function(test) {
   var store = new MongoDiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname"};
@@ -98,3 +97,58 @@ function(test) {
 
   test.equal(store.getRandom("something-else"), undefined);
 });
+
+Tinytest.add("MongoDiscoveryStore - set and getRandomWeighted - weight == 0", function(test) {
+  var store = new MongoDiscoveryStore();
+  addEndpoints(store, ['e1', 'e2', 'e3', 'e4']);
+
+  var diff = getWeightDiff(store, "e2", 0, 0);
+  test.equal(diff, 0);
+});
+
+
+Tinytest.add("MongoDiscoveryStore - set and getRandomWeighted - weight == 0.5", function(test) {
+  var store = new MongoDiscoveryStore();
+  addEndpoints(store, ['e1', 'e2', 'e3', 'e4']);
+
+  var diff = getWeightDiff(store, "e2", 0.5, 0.125);
+  test.isTrue(diff < 0.1);
+});
+
+Tinytest.add("MongoDiscoveryStore - set and getRandomWeighted - weight == 1", function(test) {
+  var store = new MongoDiscoveryStore();
+  addEndpoints(store, ['e1', 'e2', 'e3', 'e4']);
+
+  var diff = getWeightDiff(store, "e2", 1, 0.25);
+  test.isTrue(diff < 0.1);
+});
+
+Tinytest.add("MongoDiscoveryStore - only one service", function(test) {
+  var store = new MongoDiscoveryStore();
+  addEndpoints(store, ['e1']);
+
+  var diff = getWeightDiff(store, "e1", 1, 1);
+  test.equal(diff, 0);
+});
+
+
+function addEndpoints(store, endpointHases) {
+  endpointHases.forEach(function(hash) {
+    store.set(Math.random(), {serviceName: "sname", endpointHash: hash});
+  });
+}
+
+function getWeightDiff(store, endpointHash, weight, expectedRouting) {
+  var iterations = 10000;
+  var endpointSelected = 0;
+
+  for(var lc=0; lc<iterations; lc++) {
+    var service = store.getRandomWeighted("sname", endpointHash, weight);
+    if(service.endpointHash === endpointHash) {
+      endpointSelected++;
+    }
+  }
+
+  var diff = Math.abs((endpointSelected/iterations) - expectedRouting);
+  return diff;
+}
