@@ -98,7 +98,7 @@ function(test) {
   test.equal(store.getRandom("something-else"), undefined);
 });
 
-Tinytest.add("MongoDiscoveryStore - set and getRandomWeigthed - weight == 0", function(test) {
+Tinytest.add("MongoDiscoveryStore - set and getRandomWeighted - weight == 0", function(test) {
   var store = new MongoDiscoveryStore();
   addEndpoints(store, ['e1', 'e2', 'e3', 'e4']);
 
@@ -107,7 +107,7 @@ Tinytest.add("MongoDiscoveryStore - set and getRandomWeigthed - weight == 0", fu
 });
 
 
-Tinytest.add("MongoDiscoveryStore - set and getRandomWeigthed - weight == 0.5", function(test) {
+Tinytest.add("MongoDiscoveryStore - set and getRandomWeighted - weight == 0.5", function(test) {
   var store = new MongoDiscoveryStore();
   addEndpoints(store, ['e1', 'e2', 'e3', 'e4']);
 
@@ -115,7 +115,7 @@ Tinytest.add("MongoDiscoveryStore - set and getRandomWeigthed - weight == 0.5", 
   test.isTrue(diff < 0.1);
 });
 
-Tinytest.add("MongoDiscoveryStore - set and getRandomWeigthed - weight == 1", function(test) {
+Tinytest.add("MongoDiscoveryStore - set and getRandomWeighted - weight == 1", function(test) {
   var store = new MongoDiscoveryStore();
   addEndpoints(store, ['e1', 'e2', 'e3', 'e4']);
 
@@ -143,7 +143,7 @@ function getWeightDiff(store, endpointHash, weight, expectedRouting) {
   var endpointSelected = 0;
 
   for(var lc=0; lc<iterations; lc++) {
-    var service = store.getRandomWeigthed("sname", endpointHash, weight);
+    var service = store.getRandomWeighted("sname", endpointHash, weight);
     if(service.endpointHash === endpointHash) {
       endpointSelected++;
     }
