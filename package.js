@@ -25,6 +25,7 @@ Package.onTest(function(api) {
     'tests/server/worker_pool.js',
     'tests/server/discovery_store.js',
     'tests/server/discovery.js',
+    'tests/server/discovery_backends/mongo.js',
     'tests/server/balancer/utils.js',
     'tests/server/balancer/route.js',
     'tests/server/balancer/workers.js',
