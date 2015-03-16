@@ -23,8 +23,8 @@ Package.onTest(function(api) {
     'tests/server/utils.js',
     'tests/server/api.js',
     'tests/server/worker_pool.js',
-    'tests/server/discovery_backends/mongo/store.js',
-    'tests/server/discovery_backends/mongo/discovery.js',
+    'tests/server/discovery_store.js',
+    'tests/server/discovery.js',
     'tests/server/balancer/utils.js',
     'tests/server/balancer/route.js',
     'tests/server/balancer/workers.js',
@@ -50,8 +50,9 @@ function configurePackage(api) {
 
   api.addFiles([
     'lib/server/api.js',
-    'lib/server/discovery_backends/mongo/store.js',
-    'lib/server/discovery_backends/mongo/discovery.js',
+    'lib/server/discovery.js',
+    'lib/server/discovery_store.js',
+    'lib/server/discovery_backends/mongo.js',
     'lib/server/utils.js',
     'lib/server/worker_pool.js',
     'lib/server/balancer/namespace.js',
