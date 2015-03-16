@@ -1,5 +1,5 @@
-Tinytest.add("MongoDiscoveryStore - set and get methods", function(test) {
-  var store = new MongoDiscoveryStore();
+Tinytest.add("DiscoveryStore - set and get methods", function(test) {
+  var store = new DiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname"};
   store.set("one", doc);
 
@@ -9,8 +9,8 @@ Tinytest.add("MongoDiscoveryStore - set and get methods", function(test) {
   test.equal(store.byEndpointHash("aaa"), doc);
 });
 
-Tinytest.add("MongoDiscoveryStore - set twice and get", function(test) {
-  var store = new MongoDiscoveryStore();
+Tinytest.add("DiscoveryStore - set twice and get", function(test) {
+  var store = new DiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname"};
   store.set("one", doc);
   store.set("one", doc);
@@ -21,8 +21,8 @@ Tinytest.add("MongoDiscoveryStore - set twice and get", function(test) {
   test.equal(store.byEndpointHash("aaa"), doc);
 });
 
-Tinytest.add("MongoDiscoveryStore - set and remove", function(test) {
-  var store = new MongoDiscoveryStore();
+Tinytest.add("DiscoveryStore - set and remove", function(test) {
+  var store = new DiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname"};
   store.set("one", doc);
   store.remove("one");
@@ -33,8 +33,8 @@ Tinytest.add("MongoDiscoveryStore - set and remove", function(test) {
   test.equal(store.byEndpointHash("aaa"), undefined);
 });
 
-Tinytest.add("MongoDiscoveryStore - set twice and get methods", function(test) {
-  var store = new MongoDiscoveryStore();
+Tinytest.add("DiscoveryStore - set twice and get methods", function(test) {
+  var store = new DiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname"};
   var doc2 = {endpointHash: "other", serviceName: "other"};
   store.set("one", doc);
@@ -46,8 +46,8 @@ Tinytest.add("MongoDiscoveryStore - set twice and get methods", function(test) {
   test.equal(store.byEndpointHash("aaa"), doc);
 });
 
-Tinytest.add("MongoDiscoveryStore - set and get byBalancer", function(test) {
-  var store = new MongoDiscoveryStore();
+Tinytest.add("DiscoveryStore - set and get byBalancer", function(test) {
+  var store = new DiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname", balancer: "burl"};
   store.set("one", doc);
   store.set("one", doc);
@@ -59,8 +59,8 @@ Tinytest.add("MongoDiscoveryStore - set and get byBalancer", function(test) {
   test.equal(store.byBalancer("burl"), doc);
 });
 
-Tinytest.add("MongoDiscoveryStore - set and remove byBalancer", function(test) {
-  var store = new MongoDiscoveryStore();
+Tinytest.add("DiscoveryStore - set and remove byBalancer", function(test) {
+  var store = new DiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname", balancer: "burl"};
   store.set("one", doc);
   store.remove("one");
@@ -72,34 +72,34 @@ Tinytest.add("MongoDiscoveryStore - set and remove byBalancer", function(test) {
   test.equal(store.byBalancer("burl"), undefined);
 });
 
-Tinytest.add("MongoDiscoveryStore - set and getRandom", function(test) {
-  var store = new MongoDiscoveryStore();
+Tinytest.add("DiscoveryStore - set and getRandom", function(test) {
+  var store = new DiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname"};
   store.set("one", doc);
 
   test.equal(store.getRandom(), doc);
 });
 
-Tinytest.add("MongoDiscoveryStore - set and getRandom with serviceName",
+Tinytest.add("DiscoveryStore - set and getRandom with serviceName",
 function(test) {
-  var store = new MongoDiscoveryStore();
+  var store = new DiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname"};
   store.set("one", doc);
 
   test.equal(store.getRandom("sname"), doc);
 });
 
-Tinytest.add("MongoDiscoveryStore - set and getRandom with no serviceName",
+Tinytest.add("DiscoveryStore - set and getRandom with no serviceName",
 function(test) {
-  var store = new MongoDiscoveryStore();
+  var store = new DiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname"};
   store.set("one", doc);
 
   test.equal(store.getRandom("something-else"), undefined);
 });
 
-Tinytest.add("MongoDiscoveryStore - set and getRandomWeighted - weight == 0", function(test) {
-  var store = new MongoDiscoveryStore();
+Tinytest.add("DiscoveryStore - set and getRandomWeighted - weight == 0", function(test) {
+  var store = new DiscoveryStore();
   addEndpoints(store, ['e1', 'e2', 'e3', 'e4']);
 
   var diff = getWeightDiff(store, "e2", 0, 0);
@@ -107,24 +107,24 @@ Tinytest.add("MongoDiscoveryStore - set and getRandomWeighted - weight == 0", fu
 });
 
 
-Tinytest.add("MongoDiscoveryStore - set and getRandomWeighted - weight == 0.5", function(test) {
-  var store = new MongoDiscoveryStore();
+Tinytest.add("DiscoveryStore - set and getRandomWeighted - weight == 0.5", function(test) {
+  var store = new DiscoveryStore();
   addEndpoints(store, ['e1', 'e2', 'e3', 'e4']);
 
   var diff = getWeightDiff(store, "e2", 0.5, 0.125);
   test.isTrue(diff < 0.1);
 });
 
-Tinytest.add("MongoDiscoveryStore - set and getRandomWeighted - weight == 1", function(test) {
-  var store = new MongoDiscoveryStore();
+Tinytest.add("DiscoveryStore - set and getRandomWeighted - weight == 1", function(test) {
+  var store = new DiscoveryStore();
   addEndpoints(store, ['e1', 'e2', 'e3', 'e4']);
 
   var diff = getWeightDiff(store, "e2", 1, 0.25);
   test.isTrue(diff < 0.1);
 });
 
-Tinytest.add("MongoDiscoveryStore - only one service", function(test) {
-  var store = new MongoDiscoveryStore();
+Tinytest.add("DiscoveryStore - only one service", function(test) {
+  var store = new DiscoveryStore();
   addEndpoints(store, ['e1']);
 
   var diff = getWeightDiff(store, "e1", 1, 1);
