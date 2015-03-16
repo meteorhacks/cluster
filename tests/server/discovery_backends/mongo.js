@@ -6,6 +6,37 @@ Tinytest.add("MongoDiscovery - connect", function(test) {
   });
 });
 
+Tinytest.addAsync("MongoDiscovery - startWatching - cursors", function(test, done) {
+  var store = new DiscoveryStore();
+  var coll = new Mongo.Collection(Random.id());
+  var doc = createNewService("aa");
+
+  var newFields = {
+    _dataFetchInterval: 10,
+    _observerAndStore: sinon.stub().returns({stop: function() {}})
+  };
+
+  WithNewConnection(function() {
+    WithNew(MongoDiscovery, newFields, function() {
+      var payload = MongoDiscovery._startWatching();
+      test.equal(newFields._observerAndStore.callCount, 2);
+
+      var cursor1 = newFields._observerAndStore.firstCall.args[0];
+      test.equal(cursor1.selector, {});
+      test.equal(cursor1.limitValue, 100);
+      test.equal(cursor1.sortValue, {timestamp: -1});
+
+      var cursor2 = newFields._observerAndStore.secondCall.args[0];
+      test.equal(cursor2.selector, {balancer: {$ne: null}});
+      test.equal(cursor2.limitValue, 100);
+      test.equal(cursor2.sortValue, {timestamp: -1});
+
+      test.equal(typeof payload.stop, 'function');
+      done();
+    });
+  });
+});
+
 Tinytest.add("MongoDiscovery - observeAndStore - add", function(test) {
   var store = new DiscoveryStore();
   var coll = new Mongo.Collection(Random.id());
