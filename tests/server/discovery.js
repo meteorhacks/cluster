@@ -170,8 +170,7 @@ Tinytest.add("Discovery - _getEndpoint - with _selfWeight", function(test) {
 Tinytest.add("Discovery - pickEndpoint - exist", function(test) {
   WithNewConnection(function() {
     var service = createNewService(Random.id(), {endpoint: "ep", serviceName: "s"})
-    Discovery._endpointsColl.insert(service);
-    Meteor._sleepForMs(50);
+    Discovery._currentEndpoints.set(service._id, service);
     var endpoint = Discovery.pickEndpoint("s");
     test.equal(endpoint, "ep");
   });
@@ -190,8 +189,7 @@ Tinytest.add("Discovery - pickEndpointHash - exist", function(test) {
     var service = createNewService(Random.id(), {
       endpointHash: "hash", serviceName: "s"
     });
-    Discovery._endpointsColl.insert(service);
-    Meteor._sleepForMs(50);
+    Discovery._currentEndpoints.set(service._id, service);
     var hash = Discovery.pickEndpointHash("s");
     test.equal(hash, "hash");
 
@@ -217,9 +215,8 @@ Tinytest.add("Discovery - hashToEndpoint - exist", function(test) {
       endpointHash: "hash",
       serviceName: "s"
     });
-    Discovery._endpointsColl.insert(service);
 
-    Meteor._sleepForMs(50);
+    Discovery._currentEndpoints.set(service._id, service);
     var hash = Discovery.pickEndpointHash("s");
     test.equal(hash, "hash");
 
@@ -241,8 +238,8 @@ Tinytest.add("Discovery - pickBalancer - exist", function(test) {
     var service = createNewService(Random.id(), {
       balancer: "bUrl", service: "w"
     });
-    Discovery._endpointsColl.insert(service);
-    Meteor._sleepForMs(50);
+
+    Discovery._currentBalancers.set(service._id, service);
     var endpoint = Discovery.pickBalancer();
     test.equal(endpoint, "bUrl");
   });
@@ -255,14 +252,16 @@ function(test) {
     var service = createNewService(Random.id(), {
       balancer: "bUrl", service: "w", endpointHash: "e1"
     });
-    Discovery._endpointsColl.insert(service);
+
+    Discovery._currentEndpoints.set(service._id, service);
+    Discovery._currentBalancers.set(service._id, service);
 
     var service2 = createNewService(Random.id(), {
       balancer: "bUrl2", service: "w", endpointHash: "e2"
     });
-    Discovery._endpointsColl.insert(service2);
 
-    Meteor._sleepForMs(50);
+    Discovery._currentEndpoints.set(service2._id, service2);
+    Discovery._currentBalancers.set(service2._id, service2);
 
     for(var lc=0; lc<50; lc++) {
       var endpoint = Discovery.pickBalancer("e2");
@@ -278,12 +277,14 @@ function(test) {
     var service = createNewService(Random.id(), {
       balancer: "bUrl", service: "w", endpointHash: "e1"
     });
-    Discovery._endpointsColl.insert(service);
+
+    Discovery._currentEndpoints.set(service._id, service);
+    Discovery._currentBalancers.set(service._id, service);
 
     var service2 = createNewService(Random.id(), {
       service: "w", endpointHash: "e2"
     });
-    Discovery._endpointsColl.insert(service2);
+    Discovery._currentEndpoints.set(service2._id, service2);
 
     Meteor._sleepForMs(50);
 
@@ -301,7 +302,8 @@ function(test) {
     var service = createNewService(Random.id(), {
       balancer: "bUrl", service: "w", endpointHash: "e1"
     });
-    Discovery._endpointsColl.insert(service);
+    Discovery._currentEndpoints.set(service._id, service);
+    Discovery._currentBalancers.set(service._id, service);
 
     Meteor._sleepForMs(50);
 
