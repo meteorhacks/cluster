@@ -236,10 +236,14 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer - _proxyWeb - error and retry",
+"Balancer - _proxyWeb - error and retry with headersSent already",
 function(test) {
   var req = {aa: 10};
-  var res = {bb: 10};
+  var res = {
+    headersSent: true,
+    end: sinon.stub(),
+    writeHead: sinon.stub()
+  };
   var endpoint = "http://aa.com:8000";
   var cookies = {};
 
@@ -252,23 +256,14 @@ function(test) {
 
   var proxyMock = sinon.mock(Balancer.proxy);
   proxyMock.expects("web")
-    .exactly(2)
+    .exactly(1)
     .withArgs(req, res, options)
     .onCall(0).callsArgWith(3, error);
 
-  var balancerMock = sinon.mock(Balancer);
-  balancerMock.expects("_pickEndpoint")
-    .exactly(1)
-    .withArgs(null, cookies)
-    .returns(endpoint);
-
   Balancer._proxyWeb(req, res, endpoint, cookies);
 
-  Meteor._sleepForMs(50);
-
-  balancerMock.verify();
-  balancerMock.restore();
-
+  test.equal(res.end.callCount, 1);
+  test.equal(res.writeHead.callCount, 0);
   proxyMock.verify();
   proxyMock.restore();
 });
