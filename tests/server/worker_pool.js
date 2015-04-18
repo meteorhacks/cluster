@@ -124,13 +124,17 @@ Tinytest.add("WorkerPool - _createWorker, check registration", function(test) {
   var wp = new WorkerPool(0);
   var worker = {
     process: {
-      once: sinon.stub()
+      once: sinon.stub(),
+      on: sinon.stub()
     },
     id: 100
   };
   wp._fork = sinon.stub().callsArgWith(0, worker);
-
   wp._createWorker();
+
+  // send the ready message
+  var registerWorker = worker.process.on.args[0][1];
+  registerWorker({type: 'ready'});
 
   test.equal(wp._workersMap[worker.id], worker);
   test.isTrue(wp._workers.indexOf(worker) >= 0);
