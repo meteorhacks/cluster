@@ -483,6 +483,7 @@ function(test) {
   var discovery = {
     endpointToHash: sinon.stub().returns(hash),
     pickBalancer: sinon.stub().returns(balancer),
+    pickEndpoint: sinon.stub().returns(endpoint),
   };
 
   var cookies = {
@@ -503,7 +504,7 @@ function(test) {
 
       test.isTrue(discovery.endpointToHash.calledWith(endpoint));
       var info = JSON.parse(res.end.firstCall.args[0]);
-      test.equal(info.base_url, format("/cluster-ddp/%s/web", hash));
+      test.equal(info.base_url, format("epoint/cluster-ddp/%s/web", hash));
       test.equal(info.websocket, true);
 
       balancerMock.verify();
