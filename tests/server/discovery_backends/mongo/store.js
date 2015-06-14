@@ -59,6 +59,7 @@ Tinytest.add("MongoDiscoveryStore - set and get byBalancer", function(test) {
   test.equal(store.byBalancer("burl"), doc);
 });
 
+
 Tinytest.add("MongoDiscoveryStore - set and remove byBalancer", function(test) {
   var store = new MongoDiscoveryStore();
   var doc = {endpointHash: "aaa", serviceName: "sname", balancer: "burl"};
@@ -70,6 +71,17 @@ Tinytest.add("MongoDiscoveryStore - set and remove byBalancer", function(test) {
   test.equal(store.getAll("sname"), []);
   test.equal(store.byEndpointHash("aaa"), undefined);
   test.equal(store.byBalancer("burl"), undefined);
+});
+
+Tinytest.addAsync("MongoDiscoveryStore - remove a not exiting id", 
+function(test, done) {
+  var store = new MongoDiscoveryStore();
+  try {
+    store.remove('not-exising-id');
+    done();
+  } catch(ex) {
+    throw new Error("throws an error when trying to remove not-exising-id");
+  }
 });
 
 Tinytest.add("MongoDiscoveryStore - set and getRandom", function(test) {
