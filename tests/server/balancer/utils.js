@@ -236,7 +236,7 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer - _proxyWeb - error and retry with headersSent already",
+"Balancer - _proxyWeb - error and we drop the original connection.",
 function(test) {
   var req = {aa: 10};
   var res = {
@@ -269,46 +269,6 @@ function(test) {
 });
 
 Tinytest.add(
-"Balancer - _proxyWeb - error and retry, then no endpoint",
-function(test) {
-  var req = {aa: 10};
-  var res = {bb: 10, end: sinon.stub(), writeHead: sinon.stub()};
-  var endpoint = "http://aa.com:8000";
-  var cookies = {};
-
-  var target = {
-    host: "aa.com",
-    port: "8000"
-  };
-  var options = {target: target};
-  var error = {message: "this-is-an-error"};
-
-  var proxyMock = sinon.mock(Balancer.proxy);
-  proxyMock.expects("web")
-    .exactly(1)
-    .withArgs(req, res, options)
-    .onCall(0).callsArgWith(3, error);
-
-  var balancerMock = sinon.mock(Balancer);
-  balancerMock.expects("_pickEndpoint")
-    .exactly(1)
-    .withArgs(null, cookies)
-    .returns(null);
-
-  Balancer._proxyWeb(req, res, endpoint, cookies);
-
-  Meteor._sleepForMs(50);
-
-  test.isTrue(res.end.called);
-  test.isTrue(res.writeHead.calledWith(500));
-  balancerMock.verify();
-  balancerMock.restore();
-
-  proxyMock.verify();
-  proxyMock.restore();
-});
-
-Tinytest.add(
 "Balancer - _proxyWeb - sockjs long polling support",
 function(test) {
   var req = {url: "/sockjs/something-else"};
@@ -325,64 +285,14 @@ function(test) {
 
   var proxyMock = sinon.mock(Balancer.proxy);
   proxyMock.expects("web")
-    .exactly(2)
-    .withArgs(req, res, options)
-    .onCall(0).callsArgWith(3, error);
-
-  var balancerMock = sinon.mock(Balancer);
-  balancerMock.expects("_pickEndpoint")
     .exactly(1)
-    .withArgs(null, cookies)
-    .returns(endpoint);
+    .withArgs(req, res, options);
 
   Balancer._proxyWeb(req, res, endpoint, cookies);
 
   Meteor._sleepForMs(50);
 
   test.isTrue(res.setTimeout.calledWith(2 * 60 * 1000));
-  balancerMock.verify();
-  balancerMock.restore();
-
-  proxyMock.verify();
-  proxyMock.restore();
-});
-
-Tinytest.add(
-"Balancer - _proxyWeb - max retries 2",
-function(test) {
-  var req = {aa: 10};
-  var res = {bb: 10, end: sinon.spy(), writeHead: sinon.spy()};
-  var endpoint = "http://aa.com:8000";
-  var cookies = {};
-
-  var target = {
-    host: "aa.com",
-    port: "8000"
-  };
-  var options = {target: target};
-  var error = {message: "this-is-an-error"};
-
-  var proxyMock = sinon.mock(Balancer.proxy);
-  proxyMock.expects("web")
-    .exactly(3)
-    .withArgs(req, res, options)
-    .callsArgWith(3, error);
-
-  var balancerMock = sinon.mock(Balancer);
-  balancerMock.expects("_pickEndpoint")
-    .exactly(2)
-    .withArgs(null, cookies)
-    .returns(endpoint);
-
-  Balancer._proxyWeb(req, res, endpoint, cookies);
-
-  Meteor._sleepForMs(50);
-
-  test.isTrue(res.end.called);
-  test.isTrue(res.writeHead.calledWith(500));
-
-  balancerMock.verify();
-  balancerMock.restore();
 
   proxyMock.verify();
   proxyMock.restore();
