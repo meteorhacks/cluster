@@ -503,7 +503,47 @@ function(test) {
 
       test.isTrue(discovery.endpointToHash.calledWith(endpoint));
       var info = JSON.parse(res.end.firstCall.args[0]);
-      test.equal(info.base_url, format("/cluster-ddp/%s/web", hash));
+      test.equal(info.base_url, format(endpoint + "/cluster-ddp/%s/web", hash));
+      test.equal(info.websocket, true);
+
+      balancerMock.verify();
+      balancerMock.restore();
+    });
+  });
+});
+
+Tinytest.add(
+'Balancer - _sendSockJsInfo - correct base_url, web, with no balancer, endpoint has sub path',
+function(test) {
+  var balancer = null;
+  // endpoint has a sub path
+  var endpoint = "http://localhost:8001/private";
+  var hash = "hashhh";
+  var uiService = "web";
+  var discovery = {
+    endpointToHash: sinon.stub().returns(hash),
+    pickBalancer: sinon.stub().returns(balancer),
+  };
+
+  var cookies = {
+    get: sinon.stub().returns(hash)
+  };
+
+  var balancerMock = sinon.mock(Balancer);
+  balancerMock.expects('_pickJustEndpoint')
+    .withArgs(hash, "web")
+    .returns(endpoint);
+
+  var req = {url: "/web/sockjs/info"};
+  var res = {writeHead: sinon.stub(), end: sinon.stub()};
+
+  WithCluster({_uiService: uiService}, function() {
+    WithDiscovery(discovery, function() {
+      Balancer._sendSockJsInfo(req, res, cookies);
+
+      test.isTrue(discovery.endpointToHash.calledWith(endpoint));
+      var info = JSON.parse(res.end.firstCall.args[0]);
+      test.equal(info.base_url, format(endpoint + "/cluster-ddp/%s/web", hash));
       test.equal(info.websocket, true);
 
       balancerMock.verify();
