@@ -407,17 +407,19 @@ function(test) {
   var req = {url: "/web/sockjs/info"};
   var res = {writeHead: sinon.stub(), end: sinon.stub()};
 
-  WithCluster({_uiService: uiService}, function() {
-    WithDiscovery(discovery, function() {
-      Balancer._sendSockJsInfo(req, res, cookies);
+  WithNew(process.env, {"ROOT_URL": endpoint}, function() {
+    WithCluster({_uiService: uiService}, function() {
+      WithDiscovery(discovery, function() {
+        Balancer._sendSockJsInfo(req, res, cookies);
 
-      test.isTrue(discovery.endpointToHash.calledWith(endpoint));
-      var info = JSON.parse(res.end.firstCall.args[0]);
-      test.equal(info.base_url, format(endpoint + "/cluster-ddp/%s/web", hash));
-      test.equal(info.websocket, true);
+        test.isTrue(discovery.endpointToHash.calledWith(endpoint));
+        var info = JSON.parse(res.end.firstCall.args[0]);
+        test.equal(info.base_url, format(endpoint + "/cluster-ddp/%s/web", hash));
+        test.equal(info.websocket, true);
 
-      balancerMock.verify();
-      balancerMock.restore();
+        balancerMock.verify();
+        balancerMock.restore();
+      });
     });
   });
 });
@@ -447,17 +449,19 @@ function(test) {
   var req = {url: "/web/sockjs/info"};
   var res = {writeHead: sinon.stub(), end: sinon.stub()};
 
-  WithCluster({_uiService: uiService}, function() {
-    WithDiscovery(discovery, function() {
-      Balancer._sendSockJsInfo(req, res, cookies);
+  WithNew(process.env, {"ROOT_URL": endpoint}, function() {
+    WithCluster({_uiService: uiService}, function() {
+      WithDiscovery(discovery, function() {
+        Balancer._sendSockJsInfo(req, res, cookies);
 
-      test.isTrue(discovery.endpointToHash.calledWith(endpoint));
-      var info = JSON.parse(res.end.firstCall.args[0]);
-      test.equal(info.base_url, format(endpoint + "/cluster-ddp/%s/web", hash));
-      test.equal(info.websocket, true);
+        test.isTrue(discovery.endpointToHash.calledWith(endpoint));
+        var info = JSON.parse(res.end.firstCall.args[0]);
+        test.equal(info.base_url, format(endpoint + "/cluster-ddp/%s/web", hash));
+        test.equal(info.websocket, true);
 
-      balancerMock.verify();
-      balancerMock.restore();
+        balancerMock.verify();
+        balancerMock.restore();
+      });
     });
   });
 });
