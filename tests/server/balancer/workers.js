@@ -174,7 +174,7 @@ function(test) {
       var lastArg = web.getCall(0).args.pop();
       lastArg();
 
-      test.isTrue(res.end.calledOnce);
+      test.isFalse(res.end.calledOnce);
 
       // let's call again
       Balancer._processHereHTTP(req, res);

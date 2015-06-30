@@ -262,7 +262,7 @@ function(test) {
 
   Balancer._proxyWeb(req, res, endpoint, cookies);
 
-  test.equal(res.end.callCount, 1);
+  test.equal(res.end.callCount, 0);
   test.equal(res.writeHead.callCount, 0);
   proxyMock.verify();
   proxyMock.restore();
