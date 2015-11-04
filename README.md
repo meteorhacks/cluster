@@ -286,7 +286,6 @@ I'm using [Meteor Up](https://github.com/arunoda/meteor-up) to deploy and here's
 #### DNS & SSL
 
 We'll use cloudflare for DNS and SSL setup.
-> We turn off WebSockets since cloudflare does not support SSL with WebSockets yet!
 
 * https://bulletproofmeteor.com is pointing to `ip-1` and `ip-2` via A records
 * https://one.bulletproofmeteor.com is pointing to `ip-1`
