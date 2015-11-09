@@ -58,7 +58,8 @@ function configurePackage(api) {
     'lib/server/balancer/utils.js',
     'lib/server/balancer/workers.js',
     'lib/server/balancer/route.js',
-    'lib/server/auto_connect.js'
+    'lib/server/auto_connect.js',
+    'lib/server/methods.js'
   ], ['server']);
 
   api.addFiles([
