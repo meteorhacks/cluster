@@ -1,6 +1,6 @@
 Package.describe({
   "summary": "Clustering solution for Meteor with load balancing and service discovery.",
-  "version": "1.6.9",
+  "version": "1.7.0",
   "git": "https://github.com/meteorhacks/cluster.git",
   "name": "meteorhacks:cluster"
 });
@@ -17,6 +17,8 @@ Npm.depends({
 Package.onTest(function(api) {
   configurePackage(api);
   api.use('tinytest');
+  api.use('mongo');
+  api.use('random');
   api.use('practicalmeteor:sinon@1.10.3_2');
 
   api.addFiles([
