@@ -1,6 +1,6 @@
 Package.describe({
   "summary": "Clustering solution for Meteor with load balancing and service discovery.",
-  "version": "1.6.9_1",
+  "version": "1.6.9_2",
   "git": "https://github.com/meteorhacks/cluster.git",
   "name": "meteorhacks:cluster"
 });
@@ -12,7 +12,7 @@ Npm.depends({
   // mongodb@1.4.32 with binary modules removed!
   // Stolen from Meteor's mongo package. see: http://goo.gl/GJJQ8e
   //"mongodb": "https://github.com/meteor/node-mongodb-native/tarball/634759e6326dc19a228df66ddb309285532f3b8a"
-  "mongodb": "2.1.7"
+  "mongodb": "2.2.4"
 });
 
 Package.onTest(function(api) {
