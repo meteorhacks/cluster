@@ -9,9 +9,8 @@ Npm.depends({
   "cookies": "0.5.0",
   "http-proxy": "1.8.1",
   "portscanner": "1.0.0",
-  // mongodb@1.4.32 with binary modules removed!
-  // Stolen from Meteor's mongo package. see: http://goo.gl/GJJQ8e
-  "mongodb": "https://github.com/meteor/node-mongodb-native/tarball/634759e6326dc19a228df66ddb309285532f3b8a"
+  // Used an older version of Meteor's mongodb fork instead
+  "mongodb": "https://github.com/meteor/node-mongodb-native/tarball/1.3.7-with-null-checks"
 });
 
 Package.onTest(function(api) {
